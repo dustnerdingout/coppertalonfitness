@@ -10,7 +10,7 @@ import { buildCustom } from '../lib/builder.js'
 
 const unitOf = (ex) => (ex.kind === 'time' ? 'sec' : 'reps')
 
-export default function LiftSession({ onClose, notify, onBuild }) {
+export default function LiftSession({ onClose, notify, onBuild, initialFocus = null, logDate = null }) {
   const { state, update, add } = useStore()
   const { draft, lifts, rotation } = state
   const [summary, setSummary] = useState(null)
@@ -18,9 +18,22 @@ export default function LiftSession({ onClose, notify, onBuild }) {
   const [adding, setAdding] = useState(false)
   const [info, setInfo] = useState(null)
 
-  // Start a session if there isn't one in progress
+  // Start a session if there isn't one in progress. Opened from a planned day, use that day's focus and date.
   useEffect(() => {
-    if (!draft && !summary) update((s) => ({ draft: buildSession(nextFocus(s.lifts, s.rotation), s.lifts) }))
+    if (summary) return
+    update((s) => {
+      const d = s.draft
+      const started = d && d.exercises.some((e) => e.sets.some((x) => x.done))
+      if (d && (started || !initialFocus || d.focus === initialFocus)) {
+        return !started && (d.date || null) !== (logDate || null) ? { draft: { ...d, date: logDate || undefined } } : {}
+      }
+      const fresh = buildSession(initialFocus || nextFocus(s.lifts, s.rotation), s.lifts)
+      return { draft: logDate ? { ...fresh, date: logDate } : fresh }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  useEffect(() => {
+    if (!draft && !summary) update((s) => (s.draft ? {} : { draft: buildSession(nextFocus(s.lifts, s.rotation), s.lifts) }))
   }, [draft, summary, update])
 
   if (summary) return <Summary summary={summary} onClose={onClose} />
@@ -98,7 +111,7 @@ export default function LiftSession({ onClose, notify, onBuild }) {
       return
     }
     const entry = {
-      date: todayStr(),
+      date: draft.date || todayStr(),
       focus: draft.focus,
       ...(isCustom ? { title: draft.title, muscles: draft.muscles } : {}),
       durationMin: Math.max(1, Math.round((Date.now() - draft.startedAt) / 60000)),
@@ -122,7 +135,7 @@ export default function LiftSession({ onClose, notify, onBuild }) {
     <div className="stack-lg">
       <header className="top" style={{ marginBottom: 0 }}>
         <div>
-          <div className="eyebrow">Strength</div>
+          <div className="eyebrow">Strength{draft.date && draft.date !== todayStr() ? ` · logging for ${fmtDate(draft.date, { weekday: 'short', month: 'short', day: 'numeric' })}` : ''}</div>
           <h1>{focus.name}</h1>
         </div>
         <button className="icon-btn" onClick={onClose} aria-label="Minimize"><Icon.X /></button>

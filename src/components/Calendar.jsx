@@ -53,12 +53,13 @@ function DayView({ date, setDate, open, notify }) {
   const food = dayTotals(state.meals, date)
   const isToday = date === today
 
+  // Past days log on that day (catching up); future days log today (doing it now)
+  const logDate = date < today ? date : today
   const start = (p) => {
-    if (!isToday) return
-    if (p.tone === 'lift') open({ type: 'lift' })
-    else if (p.tone === 'run' && p.workout) open({ type: 'runworkout', planId: state.runPlan.id, workoutId: p.workout.id })
-    else if (p.tone === 'run') open({ type: 'run', runType: p.slot.slice(4) })
-    else if (p.tone === 'mobility') open({ type: 'mobility' })
+    if (p.tone === 'lift') open({ type: 'lift', focus: p.focus, date: logDate })
+    else if (p.tone === 'run' && p.workout) open({ type: 'runworkout', planId: state.runPlan.id, workoutId: p.workout.id, date: logDate })
+    else if (p.tone === 'run') open({ type: 'run', runType: p.slot.slice(4), date: logDate })
+    else if (p.tone === 'mobility') open({ type: 'mobility', date: logDate })
   }
 
   return (
@@ -73,7 +74,7 @@ function DayView({ date, setDate, open, notify }) {
         </div>
         {plan.map((p) => {
           const I = toneIcon[p.tone]
-          const clickable = isToday && !p.done && p.tone !== 'rest'
+          const clickable = !p.done && p.tone !== 'rest'
           const canMove = !p.done && p.tone !== 'rest'
           return (
             <div key={p.slot} className="slot-wrap">
@@ -81,7 +82,7 @@ function DayView({ date, setDate, open, notify }) {
                 <div className="icon"><I /></div>
                 <div className="grow">
                   <h3>{p.label}</h3>
-                  <p className="muted small">{p.done ? 'Done' : p.missed ? 'Missed' : p.tone === 'rest' ? 'Recover' : isToday ? 'Tap to start' : 'Scheduled'}</p>
+                  <p className="muted small">{p.done ? 'Done' : p.missed ? 'Missed · tap to log it' : p.tone === 'rest' ? 'Recover' : isToday ? 'Tap to start' : 'Scheduled · tap to do it today'}</p>
                 </div>
                 {p.done ? <span className="check"><Icon.Check /></span> : clickable && <span className="chev"><Icon.Chevron /></span>}
               </button>

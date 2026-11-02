@@ -62,7 +62,7 @@ export default function App() {
   if (modal?.type === 'player') {
     return (
       <RunPlayer planId={modal.planId} workoutId={modal.workoutId} onClose={() => setModal({ type: 'runworkout', planId: modal.planId, workoutId: modal.workoutId })}
-        onDone={(mins) => setModal({ type: 'runworkout', planId: modal.planId, workoutId: modal.workoutId, log: true, minutes: mins })} />
+        onDone={(mins) => setModal({ type: 'runworkout', planId: modal.planId, workoutId: modal.workoutId, date: modal.date, log: true, minutes: mins })} />
     )
   }
 
@@ -72,8 +72,8 @@ export default function App() {
       <div className="app" style={{ paddingBottom: 120 }}>
         <RunWorkout planId={m.planId} workoutId={m.workoutId} onClose={close}
           onLog={(wid) => setModal({ ...m, workoutId: wid, log: true })}
-          onPlay={(wid) => setModal({ type: 'player', planId: m.planId, workoutId: wid })} />
-        {m.log && <RunSheet planRef={{ planId: m.planId, workoutId: m.workoutId }} initialMinutes={m.minutes || ''} notify={notify} onClose={close} />}
+          onPlay={(wid) => setModal({ type: 'player', planId: m.planId, workoutId: wid, date: m.date })} />
+        {m.log && <RunSheet planRef={{ planId: m.planId, workoutId: m.workoutId }} initialMinutes={m.minutes || ''} initialDate={m.date} notify={notify} onClose={close} />}
         <Toast msg={toast} />
       </div>
     )
@@ -91,7 +91,7 @@ export default function App() {
   if (modal?.type === 'lift') {
     return (
       <div className="app" style={{ paddingBottom: 120 }}>
-        <LiftSession onClose={close} notify={notify} onBuild={() => setModal({ type: 'build' })} />
+        <LiftSession onClose={close} notify={notify} onBuild={() => setModal({ type: 'build' })} initialFocus={modal.focus} logDate={modal.date} />
         <Toast msg={toast} />
       </div>
     )
@@ -113,8 +113,8 @@ export default function App() {
         ))}
       </nav>
 
-      {modal?.type === 'run' && <RunSheet initialType={modal.runType} onClose={close} notify={notify} />}
-      {modal?.type === 'mobility' && <MobilitySheet onClose={close} notify={notify} />}
+      {modal?.type === 'run' && <RunSheet initialType={modal.runType} initialDate={modal.date} onClose={close} notify={notify} />}
+      {modal?.type === 'mobility' && <MobilitySheet date={modal.date} onClose={close} notify={notify} />}
       {modal?.type === 'weigh' && <WeighSheet onClose={close} notify={notify} />}
       <Toast msg={toast} />
     </div>

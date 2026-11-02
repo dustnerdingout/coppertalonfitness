@@ -7,14 +7,14 @@ import { Icon } from './Icons.jsx'
 import { Badge, Seg, Sheet } from './ui.jsx'
 import { findWorkout, workoutSummary, RUN_PLANS } from '../lib/runplans.js'
 
-export function RunSheet({ initialType = 'easy', planRef = null, initialMinutes = '', onClose, notify }) {
+export function RunSheet({ initialType = 'easy', planRef = null, initialMinutes = '', initialDate = null, onClose, notify }) {
   const { state, add } = useStore()
   const pw = planRef ? findWorkout(planRef.planId, planRef.workoutId) : null
   const [type, setType] = useState(pw ? pw.type : initialType)
   const rec = runRecommendation(type, state.runs)
   const target = pw ? (pw.minutes || initialMinutes || 30) : type === 'intervals' ? intervalMinutes(rec) : rec.minutes
 
-  const [date, setDate] = useState(todayStr())
+  const [date, setDate] = useState(initialDate || todayStr())
   const [minutes, setMinutes] = useState(initialMinutes ? String(initialMinutes) : '')
   const [distance, setDistance] = useState(pw?.mi && !pw.intervals ? String(pw.mi) : '')
   const [rpe, setRpe] = useState(5)
@@ -90,13 +90,13 @@ export function RunSheet({ initialType = 'easy', planRef = null, initialMinutes 
   )
 }
 
-export function MobilitySheet({ onClose, notify }) {
+export function MobilitySheet({ onClose, notify, date = null }) {
   const { add } = useStore()
   const [done, setDone] = useState([])
   const toggle = (i) => setDone((d) => (d.includes(i) ? d.filter((x) => x !== i) : [...d, i]))
 
   const save = () => {
-    add('mobility', { date: todayStr(), done: done.length })
+    add('mobility', { date: date || todayStr(), done: done.length })
     notify('Mobility logged')
     onClose()
   }
