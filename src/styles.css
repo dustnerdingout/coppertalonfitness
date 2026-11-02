@@ -488,7 +488,6 @@ select.input { padding-right: 32px; }
 }
 .muscle:active { transform: scale(0.97); }
 .muscle .bodymap { width: 100%; height: auto; aspect-ratio: 1; display: block; border-radius: 10px; background: var(--bm-bg); }
-.bodymap.zoom polygon { stroke-width: 0.5; }
 .muscle-name { font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; line-height: 1.2; text-align: center; }
 .muscle-check {
   position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; border-radius: 50%;
@@ -497,16 +496,26 @@ select.input { padding-right: 32px; }
 .muscle-check svg { width: 12px; height: 12px; }
 .muscle.on { box-shadow: inset 0 0 0 2px var(--copper); }
 .muscle.on .muscle-check { background: var(--copper); color: #fff; box-shadow: none; }
-.muscle:not(.on) .bm-on { opacity: 0.75; }
+.muscle:not(.on) .bm-on { opacity: 0.8; }
 
 /* Anatomy figure */
-:root { --bm-bg: #f7f1ed; --bm-base: #ead9d0; --bm-skin: #f3e9e3; --bm-hot-1: #d9733a; --bm-hot-2: #a94f22; --bm-line: #ffffff; }
-:root[data-theme='dark'] { --bm-bg: #241f20; --bm-base: #3b3133; --bm-skin: #2e2829; --bm-hot-1: #f29a63; --bm-hot-2: #cf6a33; --bm-line: #1c1c1e; }
-.bodymap polygon { stroke: var(--bm-line); stroke-width: 0.7; stroke-linejoin: round; transition: fill 0.25s ease, opacity 0.25s ease; }
-.bodymap .bm-off { fill: var(--bm-base); }
+:root {
+  --bm-bg: #f7f1ed; --bm-base: #e2c6b8; --bm-skin: #f1e2d8; --bm-hair: #cdb8ab;
+  --bm-hot-1: #e0753a; --bm-hot-2: #a3441b; --bm-line: rgba(255, 255, 255, 0.9); --bm-outline: rgba(90, 50, 30, 0.28);
+}
+:root[data-theme='dark'] {
+  --bm-bg: #221d1e; --bm-base: #4a3b3a; --bm-skin: #362e2e; --bm-hair: #2a2424;
+  --bm-hot-1: #f5a06a; --bm-hot-2: #cf6630; --bm-line: rgba(0, 0, 0, 0.55); --bm-outline: rgba(255, 220, 200, 0.18);
+}
+.bodymap path { stroke-linejoin: round; transition: fill 0.25s ease, opacity 0.25s ease; }
+.bodymap .bm-silhouette { fill: var(--bm-skin); }
+.bodymap .bm-outline { fill: none; stroke: var(--bm-outline); stroke-width: 3; }
+.bodymap .bm-off { fill: var(--bm-base); stroke: var(--bm-line); stroke-width: 2.2; }
+.bodymap .bm-on { stroke: var(--bm-line); stroke-width: 2.2; filter: saturate(1.05); }
 .bodymap .bm-skin { fill: var(--bm-skin); }
-.bodymap .bm-on { fill: url(#bm-hot); }
-.bodymap .bm-label { font-size: 8px; fill: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+.bodymap .bm-hair { fill: var(--bm-hair); }
+.bodymap .bm-label { font-size: 44px; fill: var(--muted); font-weight: 600; }
+.bodymap.zoom { background: var(--bm-bg); }
 .target-card { padding: 20px 28px 14px; }
 .target-card .bodymap { width: 100%; max-width: 250px; display: block; margin: 0 auto; }
 .small-map .bodymap { max-width: 200px; }
