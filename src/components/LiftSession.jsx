@@ -7,6 +7,7 @@ import { Icon } from './Icons.jsx'
 import { Badge, Sheet } from './ui.jsx'
 import { ExerciseImage, ExerciseInfo } from './ExerciseVisual.jsx'
 import { buildCustom } from '../lib/builder.js'
+import { warmupSets, plateMath, isBarbell } from '../lib/warmup.js'
 
 const unitOf = (ex) => (ex.kind === 'time' ? 'sec' : 'reps')
 
@@ -77,6 +78,16 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
     exercises: d.exercises.map((e, i) => (i !== ei ? e : { ...e, sets: [...e.sets, { weight: e.sets.at(-1)?.weight ?? e.rec.weight, reps: '', done: false }] })),
   }))
 
+  const setExField = (ei, patch) => setDraft((d) => ({ ...d, exercises: d.exercises.map((e, i) => (i === ei ? { ...e, ...patch } : e)) }))
+  const toggleWarm = (ei, wi) => setDraft((d) => ({
+    ...d,
+    exercises: d.exercises.map((e, i) => {
+      if (i !== ei) return e
+      const cur = e.warmDone || []
+      return { ...e, warmDone: cur.includes(wi) ? cur.filter((x) => x !== wi) : [...cur, wi] }
+    }),
+  }))
+
   const removeExercise = (ei) => setDraft((d) => ({ ...d, exercises: d.exercises.filter((_, i) => i !== ei) }))
 
   const switchFocus = (key) => {
@@ -100,6 +111,7 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
     const exercises = draft.exercises
       .map((e) => ({
         id: e.id,
+        ...(e.effort ? { effort: e.effort } : {}),
         sets: e.sets
           .filter((s) => s.done || Number(s.reps) > 0)
           .map((s) => ({ weight: Number(s.weight) || 0, reps: Number(s.reps) || 0 }))
@@ -191,6 +203,28 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
               </div>
             </div>
 
+            {(() => {
+              const wu = warmupSets(e.id, e.sets[0]?.weight || e.rec.weight)
+              if (!wu.length) return null
+              const bb = isBarbell(e.id)
+              return (
+                <div className="warmup">
+                  <p className="warmup-label">Warm-up <span className="muted">· not logged</span></p>
+                  <div className="warmup-sets">
+                    {wu.map((w, wi) => {
+                      const done = (e.warmDone || []).includes(wi)
+                      return (
+                        <button key={wi} className={`warm ${done ? 'on' : ''}`} onClick={() => toggleWarm(ei, wi)}>
+                          <b className="num">{w.weight} × {w.reps}</b>
+                          <span>{bb ? plateMath(w.weight) : ex.cue.startsWith('Weight per hand') ? 'per hand' : 'lighter'}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })()}
+
             <div className="sets">
               <div className="set-row head">
                 <span className="center">Set</span>
@@ -213,6 +247,16 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
                 </div>
               ))}
             </div>
+            {e.sets.some((s) => s.done) && (
+              <div className="effort">
+                <span className="small muted">How hard was that?</span>
+                <div className="effort-btns">
+                  {[['easy', 'Easy'], ['good', 'Good'], ['grind', 'Grind']].map(([k, l]) => (
+                    <button key={k} className={`effort-btn ${k} ${e.effort === k ? 'on' : ''}`} onClick={() => setExField(ei, { effort: e.effort === k ? undefined : k })}>{l}</button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="row between" style={{ marginTop: 10 }}>
               <button className="btn sm ghost" onClick={() => addSet(ei)}><Icon.Plus />Set</button>
               <button className="btn sm ghost" onClick={() => removeExercise(ei)}><Icon.Trash />Remove</button>

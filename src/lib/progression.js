@@ -38,23 +38,36 @@ export function recommend(exId, lifts) {
   const sets = workingSets(hist[0].entry)
   const minReps = Math.min(...sets.map((s) => s.reps))
   const fullSets = sets.length >= ex.sets
+  // How hard it felt last time (optional): 'easy' | 'good' | 'grind'
+  const effort = hist[0].entry.effort
 
   // Bodyweight and timed moves progress by reps / seconds
   if (ex.kind !== 'weight') {
+    const unit = ex.kind === 'time' ? 's' : ''
     if (fullSets && minReps >= hi) {
       return { weight: 0, reps: hi, kind: 'up', note: `Maxed the range. Slow the tempo or add load to make ${hi} hard again.` }
     }
-    const next = Math.min(hi, minReps + ex.inc)
-    return { weight: 0, reps: next, kind: 'hold', note: `Beat last time: aim for ${next}${ex.kind === 'time' ? 's' : ''} every set.` }
+    if (effort === 'grind') return { weight: 0, reps: minReps, kind: 'hold', note: `That was a grind. Repeat ${minReps}${unit} and make it smoother.` }
+    const next = Math.min(hi, minReps + ex.inc * (effort === 'easy' ? 2 : 1))
+    return { weight: 0, reps: next, kind: 'hold', note: `${effort === 'easy' ? 'Felt easy. ' : ''}Beat last time: aim for ${next}${unit} every set.` }
   }
 
   const w = topWeight(sets)
 
+  // Top of the range on every set: add weight (double if it felt easy, wait if it was a grind)
   if (fullSets && minReps >= hi) {
-    return { weight: w + ex.inc, reps: lo, kind: 'up', note: `You hit ${hi} on every set. Add ${ex.inc} lb.` }
+    if (effort === 'grind') {
+      return { weight: w, reps: hi, kind: 'hold', note: `You hit ${hi} on every set, but it was a grind. Same weight once more to own it.` }
+    }
+    const jump = effort === 'easy' ? ex.inc * 2 : ex.inc
+    return { weight: w + jump, reps: lo, kind: 'up', note: effort === 'easy' ? `${hi} on every set and it felt easy. Add ${jump} lb.` : `You hit ${hi} on every set. Add ${jump} lb.` }
   }
 
+  // Below the range
   if (minReps < lo) {
+    if (effort === 'grind') {
+      return { weight: round5(w * 0.9), reps: hi, kind: 'down', note: 'Short of the range and a grind. Drop 10% and build back up.' }
+    }
     const prev = hist[1] && workingSets(hist[1].entry)
     const missedTwice = prev && prev.length && topWeight(prev) === w && Math.min(...prev.map((s) => s.reps)) < lo
     if (missedTwice) {
@@ -63,11 +76,20 @@ export function recommend(exId, lifts) {
     return { weight: w, reps: lo, kind: 'hold', note: `Fell short of ${lo}. Same weight, own it this time.` }
   }
 
+  // Inside the range
+  if (effort === 'easy') {
+    if (fullSets && minReps >= hi - 2) {
+      return { weight: w + ex.inc, reps: lo, kind: 'up', note: `Felt easy near the top of the range. Add ${ex.inc} lb.` }
+    }
+    const t = Math.min(hi, minReps + 2)
+    return { weight: w, reps: t, kind: 'hold', note: `Felt easy. Same weight, aim for ${t}+ reps on every set.` }
+  }
+  if (effort === 'grind') {
+    return { weight: w, reps: minReps, kind: 'hold', note: `That was a grind. Same weight and ${minReps} reps, make them smoother.` }
+  }
   const target = Math.min(hi, minReps + 1)
   return { weight: w, reps: target, kind: 'hold', note: `Same weight. Aim for ${target}+ reps on every set.` }
 }
-
-// ---------- Building sessions ----------
 
 export function nextFocus(lifts, rotation = 'ppl') {
   const order = (ROTATIONS[rotation] || ROTATIONS.ppl).order
