@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { computeTargets, dayTotals, recentFoods, caloriesFromMacros, MEAL_SLOTS } from '../lib/nutrition.js'
 import { todayStr, weightSummary, parseDate, DAY } from '../lib/stats.js'
 import { Icon } from './Icons.jsx'
-import { Sheet } from './ui.jsx'
+import { Seg, Sheet } from './ui.jsx'
+import { loadFoods, searchFoods, commonFoods, unitsFor, macrosFor, shortName, searchOnline } from '../lib/foods.js'
 
 function Macro({ name, cls, value, target, unit = 'g' }) {
   const pct = target ? (value / target) * 100 : 0
@@ -86,6 +87,8 @@ export default function Food({ notify }) {
                   <div className="list-item" key={m.id}>
                     <div className="grow">
                       <h3>{m.name}</h3>
+                      {m.items?.length > 1 && <p className="muted tiny">{m.items.map((i) => `${i.name} ${i.amount}`).join(' · ')}</p>}
+                      {m.items?.length === 1 && <p className="muted tiny">{m.items[0].amount}</p>}
                       <p className="muted small num">P {m.protein} · C {m.carbs} · F {m.fat}</p>
                     </div>
                     <b className="num">{m.calories}</b>
@@ -109,10 +112,200 @@ export default function Food({ notify }) {
 function MealSheet({ slot: initialSlot, date, onClose, onSave }) {
   const { state } = useStore()
   const [slot, setSlot] = useState(initialSlot || defaultSlot())
+  const [mode, setMode] = useState('search')
+  const [items, setItems] = useState([]) // ingredients in this meal
+  const [mealName, setMealName] = useState('')
+
+  const total = items.reduce((t, i) => ({
+    calories: t.calories + i.calories, protein: t.protein + i.protein, carbs: t.carbs + i.carbs, fat: t.fat + i.fat,
+  }), { calories: 0, protein: 0, carbs: 0, fat: 0 })
+
+  const logMeal = () => {
+    if (!items.length) return
+    const name = mealName.trim() || (items.length === 1 ? items[0].name : items.map((i) => i.name).join(', '))
+    onSave({
+      date, slot, name,
+      calories: Math.round(total.calories), protein: Math.round(total.protein), carbs: Math.round(total.carbs), fat: Math.round(total.fat),
+      items,
+    })
+  }
+
+  return (
+    <Sheet title={`Add to ${slot}`} onClose={onClose}>
+      <div className="stack">
+        <div className="chips">
+          {MEAL_SLOTS.map((m) => <button key={m} className={`chip lg ${slot === m ? 'on lift' : ''}`} onClick={() => setSlot(m)}>{m}</button>)}
+        </div>
+        <Seg options={[['search', 'Search foods'], ['manual', 'Quick add']]} value={mode} onChange={setMode} />
+
+        {mode === 'search' ? (
+          <>
+            {items.length > 0 && (
+              <div className="card meal-build">
+                <div className="row between"><h3>This meal</h3><b className="num">{Math.round(total.calories)} cal</b></div>
+                <div className="list">
+                  {items.map((it, i) => (
+                    <div className="list-item" key={i}>
+                      <div className="grow">
+                        <p style={{ fontWeight: 500 }}>{it.name}</p>
+                        <p className="muted tiny num">{it.amount} · P {it.protein} · C {it.carbs} · F {it.fat}</p>
+                      </div>
+                      <span className="num">{it.calories}</span>
+                      <button className="icon-btn" style={{ width: 30, height: 30 }} onClick={() => setItems(items.filter((_, j) => j !== i))} aria-label="Remove"><Icon.X /></button>
+                    </div>
+                  ))}
+                </div>
+                <p className="muted tiny num" style={{ marginTop: 6 }}>Protein {Math.round(total.protein)} g · Carbs {Math.round(total.carbs)} g · Fat {Math.round(total.fat)} g</p>
+              </div>
+            )}
+            <FoodSearch date={date} slot={slot} recents={recentFoods(state.meals)} onPick={(it) => setItems((x) => [...x, it])} onRelog={onSave} />
+            {items.length > 0 && (
+              <div className="sheet-sticky">
+                <input className="input" placeholder={items.length > 1 ? 'Name this meal (optional)' : items[0].name} value={mealName} onChange={(e) => setMealName(e.target.value)} />
+                <button className="btn primary block" onClick={logMeal}><Icon.Check />Log {items.length > 1 ? `${items.length} items · ` : ''}{Math.round(total.calories)} cal</button>
+              </div>
+            )}
+          </>
+        ) : (
+          <ManualEntry date={date} slot={slot} onSave={onSave} />
+        )}
+      </div>
+    </Sheet>
+  )
+}
+
+const fmtQty = (n) => (Math.round(n * 100) / 100).toString()
+
+function FoodSearch({ date, slot, recents, onPick, onRelog }) {
+  const [foods, setFoods] = useState(null)
+  const [query, setQuery] = useState('')
+  const [picking, setPicking] = useState(null) // { food, unit index, qty }
+  const [online, setOnline] = useState({ state: 'idle', results: [] })
+
+  useEffect(() => { loadFoods().then(setFoods).catch(() => setFoods([])) }, [])
+  useEffect(() => { setOnline({ state: 'idle', results: [] }) }, [query])
+
+  const results = useMemo(() => (foods && query.trim().length >= 2 ? searchFoods(foods, query) : []), [foods, query])
+  const common = useMemo(() => (foods ? commonFoods(foods) : []), [foods])
+
+  const pick = (food) => {
+    const units = unitsFor(food)
+    const hasServing = food.units.length > 0
+    const staple = common.find((c) => c.name === food.name)
+    setPicking({ food, short: staple ? staple.short : shortName(food, query), unit: hasServing ? 0 : units.length - 2, qty: hasServing ? 1 : 100 })
+  }
+
+  const goOnline = async () => {
+    setOnline({ state: 'loading', results: [] })
+    try {
+      const r = await searchOnline(query.trim())
+      setOnline({ state: 'done', results: r })
+    } catch {
+      setOnline({ state: 'error', results: [] })
+    }
+  }
+
+  if (picking) {
+    const { food } = picking
+    const units = unitsFor(food)
+    const u = units[picking.unit]
+    const grams = u.g * (Number(picking.qty) || 0)
+    const m = macrosFor(food, grams)
+    const step = u.label === 'g' ? 10 : u.label === 'oz' ? 1 : 0.5
+    const amount = `${fmtQty(Number(picking.qty) || 0)} ${u.label === 'g' || u.label === 'oz' ? u.label : u.label.replace(/^1\s+/, '')}`
+    return (
+      <div className="card stack">
+        <div>
+          <h3>{picking.short}</h3>
+          <p className="muted tiny">{food.name}</p>
+        </div>
+        <div className="amount-row">
+          <button className="icon-btn" onClick={() => setPicking({ ...picking, qty: Math.max(0, (Number(picking.qty) || 0) - step) })} aria-label="Less">−</button>
+          <input className="input num" inputMode="decimal" value={picking.qty} onChange={(e) => setPicking({ ...picking, qty: e.target.value.replace(/[^\d.]/g, '') })} />
+          <button className="icon-btn" onClick={() => setPicking({ ...picking, qty: (Number(picking.qty) || 0) + step })} aria-label="More">+</button>
+          <select className="input" value={picking.unit} onChange={(e) => {
+            const ni = Number(e.target.value); const nu = units[ni]
+            setPicking({ ...picking, unit: ni, qty: nu.label === 'g' ? Math.round(grams) || 100 : nu.label === 'oz' ? Math.round((grams / 28.35) * 10) / 10 || 4 : 1 })
+          }}>
+            {units.map((x, i) => <option key={i} value={i}>{x.label === 'g' || x.label === 'oz' ? x.label : `${x.label} (${Math.round(x.g)} g)`}</option>)}
+          </select>
+        </div>
+        <div className="macro-preview num">
+          <div><b>{m.calories}</b><span>cal</span></div>
+          <div><b>{m.protein}</b><span>protein</span></div>
+          <div><b>{m.carbs}</b><span>carbs</span></div>
+          <div><b>{m.fat}</b><span>fat</span></div>
+        </div>
+        <p className="muted tiny">{Math.round(grams)} g · {food.kcal} cal per 100 g · {food.source === 'OFF' ? 'Open Food Facts' : 'USDA'}</p>
+        <div className="row">
+          <button className="btn grow" onClick={() => setPicking(null)}>Back</button>
+          <button className="btn primary grow" disabled={!grams} onClick={() => {
+            onPick({ name: picking.short, food: food.name, amount, grams: Math.round(grams), ...m })
+            setPicking(null); setQuery('')
+          }}><Icon.Plus />Add</button>
+        </div>
+      </div>
+    )
+  }
+
+  const row = (f, tag) => (
+    <button key={f.id} className="food-row" onClick={() => pick(f)}>
+      <div className="grow">
+        <p className="food-name">{f.short || f.name}</p>
+        <p className="muted tiny">{f.short ? f.name : ''}{f.units[0] ? `${f.short ? ' · ' : ''}${f.units[0].label}: ${Math.round((f.kcal * f.units[0].g) / 100)} cal` : `${f.short ? ' · ' : ''}${f.kcal} cal per 100 g`}</p>
+      </div>
+      {tag && <span className="pill">{tag}</span>}
+      <Icon.Plus />
+    </button>
+  )
+
+  return (
+    <div className="stack">
+      <div className="search-box">
+        <Icon.Search />
+        <input className="input" placeholder="Search foods: chicken breast, rice, banana…" value={query} autoFocus onChange={(e) => setQuery(e.target.value)} />
+      </div>
+
+      {!foods && <p className="muted small center">Loading food database…</p>}
+
+      {foods && query.trim().length < 2 && (
+        <>
+          {recents.length > 0 && (
+            <>
+              <div className="section-label">Log again</div>
+              <div className="chips">
+                {recents.slice(0, 8).map((m) => (
+                  <button key={m.id} className="chip lg" onClick={() => onRelog({ date, slot, name: m.name, calories: m.calories, protein: m.protein, carbs: m.carbs, fat: m.fat, ...(m.items ? { items: m.items } : {}) })}>
+                    {m.name} · {m.calories}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          <div className="section-label">Common foods</div>
+          <div className="card food-list">{common.map((f) => row(f))}</div>
+        </>
+      )}
+
+      {foods && query.trim().length >= 2 && (
+        <>
+          {results.length ? <div className="card food-list">{results.map((f) => row(f))}</div> : <p className="muted small center">No matches in the built in list.</p>}
+          {online.state === 'idle' && <button className="btn block" onClick={goOnline}><Icon.Search />Search packaged foods online</button>}
+          {online.state === 'loading' && <p className="muted small center">Searching Open Food Facts…</p>}
+          {online.state === 'error' && <p className="muted small center">Couldn't reach the online database. Check your connection and try again.</p>}
+          {online.state === 'done' && (online.results.length
+            ? <><div className="section-label">Packaged foods</div><div className="card food-list">{online.results.map((f) => row(f, 'Online'))}</div></>
+            : <p className="muted small center">No packaged foods found.</p>)}
+        </>
+      )}
+      <p className="muted tiny center">Nutrition data: USDA FoodData (SR28) and Open Food Facts.</p>
+    </div>
+  )
+}
+
+function ManualEntry({ date, slot, onSave }) {
   const [f, setF] = useState({ name: '', calories: '', protein: '', carbs: '', fat: '', servings: '1' })
   const set = (k) => (e) => setF({ ...f, [k]: k === 'name' ? e.target.value : e.target.value.replace(/[^\d.]/g, '') })
-  const recents = recentFoods(state.meals)
-
   const s = Number(f.servings) || 1
   const autoCal = caloriesFromMacros(f.protein, f.carbs, f.fat)
   const cal = Number(f.calories) || autoCal
@@ -129,39 +322,19 @@ function MealSheet({ slot: initialSlot, date, onClose, onSave }) {
   }
 
   return (
-    <Sheet title={`Add to ${slot}`} onClose={onClose}>
-      <div className="stack">
-        <div className="chips">
-          {MEAL_SLOTS.map((m) => <button key={m} className={`chip lg ${slot === m ? 'on lift' : ''}`} onClick={() => setSlot(m)}>{m}</button>)}
-        </div>
-
-        {recents.length > 0 && (
-          <>
-            <div className="section-label">Quick add from recent</div>
-            <div className="chips">
-              {recents.map((m) => (
-                <button key={m.id} className="chip lg" onClick={() => onSave({ date, slot, name: m.name, calories: m.calories, protein: m.protein, carbs: m.carbs, fat: m.fat })}>
-                  {m.name} · {m.calories}
-                </button>
-              ))}
-            </div>
-            <div className="section-label">Or enter something new</div>
-          </>
-        )}
-
-        <label className="field">Food
-          <input className="input" placeholder="e.g. Chicken rice bowl" value={f.name} onChange={set('name')} />
-        </label>
-        <div className="grid-2">
-          <label className="field">Protein (g)<input className="input num" inputMode="decimal" value={f.protein} onChange={set('protein')} /></label>
-          <label className="field">Carbs (g)<input className="input num" inputMode="decimal" value={f.carbs} onChange={set('carbs')} /></label>
-          <label className="field">Fat (g)<input className="input num" inputMode="decimal" value={f.fat} onChange={set('fat')} /></label>
-          <label className="field">Calories<input className="input num" inputMode="decimal" placeholder={autoCal ? String(autoCal) : ''} value={f.calories} onChange={set('calories')} /></label>
-        </div>
-        <label className="field">Servings<input className="input num" inputMode="decimal" value={f.servings} onChange={set('servings')} /></label>
-        <p className="muted small">Leave calories blank and it's calculated from the macros (protein and carbs are 4 cal per gram, fat is 9).</p>
-        <button className="btn primary block" onClick={save} disabled={!f.name.trim() || !cal}><Icon.Check />Log {cal ? `${Math.round(cal * s)} cal` : ''}</button>
+    <div className="stack">
+      <label className="field">Food
+        <input className="input" placeholder="e.g. Chicken rice bowl" value={f.name} onChange={set('name')} />
+      </label>
+      <div className="grid-2">
+        <label className="field">Protein (g)<input className="input num" inputMode="decimal" value={f.protein} onChange={set('protein')} /></label>
+        <label className="field">Carbs (g)<input className="input num" inputMode="decimal" value={f.carbs} onChange={set('carbs')} /></label>
+        <label className="field">Fat (g)<input className="input num" inputMode="decimal" value={f.fat} onChange={set('fat')} /></label>
+        <label className="field">Calories<input className="input num" inputMode="decimal" placeholder={autoCal ? String(autoCal) : ''} value={f.calories} onChange={set('calories')} /></label>
       </div>
-    </Sheet>
+      <label className="field">Servings<input className="input num" inputMode="decimal" value={f.servings} onChange={set('servings')} /></label>
+      <p className="muted small">Leave calories blank and it's calculated from the macros (protein and carbs are 4 cal per gram, fat is 9).</p>
+      <button className="btn primary block" onClick={save} disabled={!f.name.trim() || !cal}><Icon.Check />Log {cal ? `${Math.round(cal * s)} cal` : ''}</button>
+    </div>
   )
 }

@@ -35,6 +35,7 @@ export const Icon = {
   Play: () => <S><path d="M7 5l12 7-12 7z" fill="currentColor" /></S>,
   Pause: () => <S><path d="M8 5v14M16 5v14" strokeWidth="3" /></S>,
   Metronome: () => <S><path d="M9 3h6l4 18H5zM12 17l5-9M8 14h8" /></S>,
+  Search: () => <S><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></S>,
   ChevronLeft: () => <S><path d="M15 6l-6 6 6 6" /></S>,
   X: () => <S><path d="M6 6l12 12M18 6L6 18" /></S>,
   Logo: () => (
