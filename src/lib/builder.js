@@ -90,7 +90,8 @@ export function buildCustom(muscles, minutes, lifts, { random = false } = {}) {
 
   // Take the next exercise for a muscle, skipping repeats of a movement pattern unless nothing else is left
   const takeNext = (m, allowRepeat) => {
-    const i = queue[m].findIndex((id) => allowRepeat || !FAMILY[id] || !families.has(FAMILY[id]))
+    const fam = (id) => FAMILY[id] || EXERCISES[id].family
+    const i = queue[m].findIndex((id) => allowRepeat || !fam(id) || !families.has(fam(id)))
     return i < 0 ? null : queue[m].splice(i, 1)[0]
   }
 
@@ -106,7 +107,8 @@ export function buildCustom(muscles, minutes, lifts, { random = false } = {}) {
         const everyMuscleHasOne = sel.every((x) => count[x])
         if (used + cost > budget + 2 && everyMuscleHasOne) { queue[m].unshift(id); continue }
         picked.push(id)
-        if (FAMILY[id]) families.add(FAMILY[id])
+        const f = FAMILY[id] || EXERCISES[id].family
+        if (f) families.add(f)
         used += cost
         count[m] = (count[m] || 0) + 1
         progress = true

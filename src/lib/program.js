@@ -1,3 +1,5 @@
+import { MORE } from './exercisesMore.js'
+
 // Exercise library + body part focuses.
 //
 // Exercise fields
@@ -149,6 +151,21 @@ export const FOCUSES = {
       { pool: ['plank', 'deadBug'] },
     ],
   },
+}
+
+// Merge in the extra exercises and give each body part focus more variations to rotate through
+Object.assign(EXERCISES, MORE)
+for (const [id, e] of Object.entries(MORE)) if (e.compound) COMPOUND.add(id)
+
+const MORE_POOLS = {
+  push: [['neutralDbPress', 'declineBench'], ['smithIncline', 'machineIncline'], ['dbFly', 'inclineDbFly', 'lowCableFly'], ['uprightRow', 'frontRaise'], ['vBarPushdown', 'dbOhExt', 'kickback', 'tricepDip'], ['lyingDbExt', 'reversePushdown']],
+  pull: [['underhandPulldown', 'bandPullUp'], ['tBarRow', 'machineHighRow', 'underhandRow'], ['oneArmCableRow', 'dbPullover', 'invertedRow'], ['rearDeltRaise', 'cableRearDelt'], ['bbCurl', 'spiderCurl', 'machinePreacher', 'concentrationCurl'], ['ropeHammer', 'zottman', 'reverseCurl']],
+  legs: [['frontSquat', 'smithSquat', 'narrowLegPress'], ['goodMorning', 'sumoDl', 'singleLegRdl'], ['reverseLunge'], ['seatedLegCurl', 'gluteBridge', 'pullThrough', 'hipAbduction'], ['seatedCalf', 'legPressCalf', 'donkeyCalf', 'smithCalf'], ['abWheel', 'pallof', 'sidePlank', 'woodchop', 'bicycle']],
+  shoulders: [['machineOhp', 'arnold', 'pushPress'], ['uprightRow', 'frontRaise'], ['rearDeltRaise', 'cableRearDelt'], ['bbCurl', 'concentrationCurl', 'zottman'], ['vBarPushdown', 'kickback', 'dbOhExt'], ['pallof', 'declineCrunch', 'abWheel']],
+  full: [['frontSquat', 'dbSquat'], ['neutralDbPress', 'machineIncline'], ['tBarRow', 'machineHighRow', 'underhandPulldown'], ['gluteBridge', 'kbSwing', 'goodMorning'], ['arnold', 'rearDeltRaise'], ['sidePlank', 'pallof', 'abWheel']],
+}
+for (const [f, slots] of Object.entries(MORE_POOLS)) {
+  slots.forEach((ids, i) => { for (const id of ids) if (!FOCUSES[f].slots[i].pool.includes(id)) FOCUSES[f].slots[i].pool.push(id) })
 }
 
 export const ROTATIONS = {
