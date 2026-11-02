@@ -31,7 +31,7 @@ function useResolvedTheme(theme) {
   const dark = theme === 'dark' || (theme === 'system' && sysDark)
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#121014' : '#f6f3ef')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#000000' : '#f5f5f7')
   }, [dark])
   return dark
 }
@@ -68,10 +68,10 @@ export default function App() {
 
   return (
     <div className="app">
-      {tab === 'today' && <Today open={setModal} toggleTheme={toggleTheme} dark={dark} goTab={setTab} />}
+      {tab === 'today' && <Today open={setModal} toggleTheme={toggleTheme} dark={dark} goTab={setTab} notify={notify} />}
       {tab === 'progress' && <Progress />}
       {tab === 'food' && <Food notify={notify} />}
-      {tab === 'calendar' && <Calendar open={setModal} />}
+      {tab === 'calendar' && <Calendar open={setModal} notify={notify} />}
       {tab === 'settings' && <Settings notify={notify} />}
 
       <nav className="nav" aria-label="Main">

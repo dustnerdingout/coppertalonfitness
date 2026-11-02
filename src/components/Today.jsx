@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { MoveSheet, DaySheet } from './PlanSheets.jsx'
 import { FOCUSES, RUN_TYPES, SLOTS, DAY_NAMES } from '../lib/program.js'
 import { nextFocus, runRecommendation, intervalLabel, intervalMinutes } from '../lib/progression.js'
 import { todayStr, weightSummary, DAY } from '../lib/stats.js'
 import { Icon } from './Icons.jsx'
 import { computeTargets, dayTotals } from '../lib/nutrition.js'
-import { planFor, datesBetween, addDays } from '../lib/plan.js'
+import { planFor, datesBetween, addDays, slotsFor, isOverridden } from '../lib/plan.js'
 import { parseDate } from '../lib/stats.js'
 
 const slotIcon = { lift: Icon.Dumbbell, run: Icon.Run, mobility: Icon.Stretch, rest: Icon.Bed }
@@ -16,12 +18,14 @@ function weekDates() {
   return Array.from({ length: 7 }, (_, i) => new Date(monday.getTime() + i * DAY))
 }
 
-export default function Today({ open, toggleTheme, dark, goTab }) {
+export default function Today({ open, toggleTheme, dark, goTab, notify }) {
   const { state } = useStore()
-  const { profile, schedule, lifts, runs, mobility, weights, draft } = state
+  const [moving, setMoving] = useState(null)
+  const [editing, setEditing] = useState(false)
+  const { profile, lifts, runs, mobility, weights, draft } = state
   const today = todayStr()
   const dow = new Date().getDay()
-  const todaySlots = schedule[dow] || []
+  const todaySlots = slotsFor(state, today)
   const ws = weightSummary(profile, weights)
   const targets = computeTargets(profile, ws.current)
   const eaten = dayTotals(state.meals, today)
@@ -46,7 +50,7 @@ export default function Today({ open, toggleTheme, dark, goTab }) {
     if (slot === 'lift') {
       const f = FOCUSES[nextKey]
       title = draft ? `Resume ${f.name}` : f.name
-      sub = draft ? 'Workout in progress' : `Strength · ${f.slots.length} exercises · tap to change focus`
+      sub = draft ? 'Workout in progress' : `Strength · ${f.slots.length} exercises`
       done = !draft && didLift(today)
       onClick = () => open({ type: 'lift' })
     } else if (slot.startsWith('run-')) {
@@ -68,15 +72,23 @@ export default function Today({ open, toggleTheme, dark, goTab }) {
       onClick = null
     }
 
+    const canMove = !done && slot !== 'rest' && !(slot === 'lift' && draft)
     return (
-      <button key={slot} className={`session tone-${tone} ${done ? 'done' : ''}`} onClick={onClick || undefined} style={!onClick ? { cursor: 'default' } : undefined}>
-        <div className="icon"><I /></div>
-        <div className="grow">
-          <h3>{title}</h3>
-          <p className="muted small">{sub}</p>
-        </div>
-        {done ? <span className="check"><Icon.Check /></span> : onClick && <span className="chev"><Icon.Chevron /></span>}
-      </button>
+      <div key={slot} className="slot-wrap">
+        <button className={`session tone-${tone} ${done ? 'done' : ''}`} onClick={onClick || undefined} style={{ ...(!onClick ? { cursor: 'default' } : {}), ...(!canMove ? { paddingBottom: 14 } : {}) }}>
+          <div className="icon"><I /></div>
+          <div className="grow">
+            <h3>{title}</h3>
+            <p className="muted small">{sub}</p>
+          </div>
+          {done ? <span className="check"><Icon.Check /></span> : onClick && <span className="chev"><Icon.Chevron /></span>}
+        </button>
+        {canMove && (
+          <button className="move-btn" onClick={() => setMoving({ slot, label: title })} aria-label={`Move ${title}`}>
+            <Icon.Move />Move
+          </button>
+        )}
+      </div>
     )
   }
 
@@ -111,7 +123,7 @@ export default function Today({ open, toggleTheme, dark, goTab }) {
       <div className="week">
         {weekDates().map((d) => {
           const ds = todayStr(d)
-          const slots = schedule[d.getDay()] || []
+          const slots = slotsFor(state, ds)
           return (
             <div key={ds} className={`day ${ds === today ? 'today' : ''}`}>
               <span>{DAY_NAMES[d.getDay()]}</span>
@@ -129,9 +141,14 @@ export default function Today({ open, toggleTheme, dark, goTab }) {
       </div>
 
       <section className="stack">
-        <div className="section-label">Today · {DAY_NAMES[dow]}</div>
-        {todaySlots.length ? todaySlots.map(renderSlot) : <div className="card flat empty">Nothing scheduled. Edit your week in Settings.</div>}
+        <div className="row between" style={{ margin: '8px 2px -4px' }}>
+          <div className="section-label" style={{ margin: 0 }}>Today · {DAY_NAMES[dow]}{isOverridden(state, today) ? ' · changed' : ''}</div>
+          <button className="btn sm ghost" onClick={() => setEditing(true)}>Edit today</button>
+        </div>
+        {todaySlots.length ? todaySlots.map(renderSlot) : <div className="card flat empty">Nothing scheduled.</div>}
       </section>
+      {moving && <MoveSheet date={today} slot={moving.slot} label={moving.label} notify={notify} onClose={() => setMoving(null)} />}
+      {editing && <DaySheet date={today} onClose={() => setEditing(false)} />}
 
       <section className="stack">
         <div className="row between" style={{ margin: '8px 2px -4px' }}>

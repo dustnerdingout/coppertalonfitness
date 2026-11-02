@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
-import { planFor, datesBetween, mondayOf, addDays } from '../lib/plan.js'
+import { planFor, datesBetween, mondayOf, addDays, isOverridden } from '../lib/plan.js'
+import { MoveSheet, DaySheet } from './PlanSheets.jsx'
 import { todayStr, parseDate, fmtDate } from '../lib/stats.js'
 import { dayTotals } from '../lib/nutrition.js'
 import { FOCUSES, RUN_TYPES } from '../lib/program.js'
@@ -11,7 +12,7 @@ import History, { EntryCard, allEntries } from './History.jsx'
 const toneIcon = { lift: Icon.Dumbbell, run: Icon.Run, mobility: Icon.Stretch, rest: Icon.Bed }
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export default function Calendar({ open }) {
+export default function Calendar({ open, notify }) {
   const [view, setView] = useState('week')
   const [sel, setSel] = useState(todayStr())
   const goDay = (d) => { setSel(d); setView('day') }
@@ -23,7 +24,7 @@ export default function Calendar({ open }) {
         {sel !== todayStr() && view !== 'list' && <button className="btn sm" onClick={() => setSel(todayStr())}>Today</button>}
       </header>
       <Seg options={[['day', 'Day'], ['week', 'Week'], ['month', 'Month'], ['list', 'List']]} value={view} onChange={setView} />
-      {view === 'day' && <DayView date={sel} setDate={setSel} open={open} />}
+      {view === 'day' && <DayView date={sel} setDate={setSel} open={open} notify={notify} />}
       {view === 'week' && <WeekView date={sel} setDate={setSel} goDay={goDay} />}
       {view === 'month' && <MonthView date={sel} setDate={setSel} goDay={goDay} />}
       {view === 'list' && <History />}
@@ -42,8 +43,10 @@ function Nav({ label, onPrev, onNext }) {
 }
 
 // ---------- Day ----------
-function DayView({ date, setDate, open }) {
+function DayView({ date, setDate, open, notify }) {
   const { state, remove } = useStore()
+  const [moving, setMoving] = useState(null)
+  const [editing, setEditing] = useState(false)
   const today = todayStr()
   const plan = planFor(state, [date])[date]
   const entries = allEntries(state).filter((x) => x.date === date)
@@ -63,21 +66,30 @@ function DayView({ date, setDate, open }) {
         onPrev={() => setDate(addDays(date, -1))} onNext={() => setDate(addDays(date, 1))} />
 
       <section className="stack">
-        <div className="section-label">Planned</div>
+        <div className="row between" style={{ margin: '8px 2px -4px' }}>
+          <div className="section-label" style={{ margin: 0 }}>Planned{isOverridden(state, date) ? ' · changed' : ''}</div>
+          <button className="btn sm ghost" onClick={() => setEditing(true)}>Edit day</button>
+        </div>
         {plan.map((p) => {
           const I = toneIcon[p.tone]
           const clickable = isToday && !p.done && p.tone !== 'rest'
+          const canMove = !p.done && p.tone !== 'rest'
           return (
-            <button key={p.slot} className={`session tone-${p.tone} ${p.done ? 'done' : ''}`} onClick={() => clickable && start(p)} style={!clickable ? { cursor: 'default' } : undefined}>
-              <div className="icon"><I /></div>
-              <div className="grow">
-                <h3>{p.label}</h3>
-                <p className="muted small">{p.done ? 'Done' : p.missed ? 'Missed' : p.tone === 'rest' ? 'Recover' : isToday ? 'Tap to start' : 'Scheduled'}</p>
-              </div>
-              {p.done ? <span className="check"><Icon.Check /></span> : clickable && <span className="chev"><Icon.Chevron /></span>}
-            </button>
+            <div key={p.slot} className="slot-wrap">
+              <button className={`session tone-${p.tone} ${p.done ? 'done' : ''}`} onClick={() => clickable && start(p)} style={{ ...(!clickable ? { cursor: 'default' } : {}), ...(!canMove ? { paddingBottom: 14 } : {}) }}>
+                <div className="icon"><I /></div>
+                <div className="grow">
+                  <h3>{p.label}</h3>
+                  <p className="muted small">{p.done ? 'Done' : p.missed ? 'Missed' : p.tone === 'rest' ? 'Recover' : isToday ? 'Tap to start' : 'Scheduled'}</p>
+                </div>
+                {p.done ? <span className="check"><Icon.Check /></span> : clickable && <span className="chev"><Icon.Chevron /></span>}
+              </button>
+              {canMove && <button className="move-btn" onClick={() => setMoving(p)}><Icon.Move />Move</button>}
+            </div>
           )
         })}
+        {moving && <MoveSheet date={date} slot={moving.slot} label={moving.label} notify={notify} onClose={() => setMoving(null)} />}
+        {editing && <DaySheet date={date} onClose={() => setEditing(false)} />}
         {!plan.length && <div className="card flat empty">Nothing scheduled.</div>}
       </section>
 
