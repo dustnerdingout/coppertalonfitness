@@ -6,12 +6,8 @@ import { swapExercise, swapOptions, recommend } from '../lib/progression.js'
 import { ExerciseImage, ExerciseInfo } from './ExerciseVisual.jsx'
 import { Icon } from './Icons.jsx'
 import { Seg, Sheet } from './ui.jsx'
+import BodyMap, { MuscleZoom } from './BodyMap.jsx'
 
-// Representative photo for each muscle tile
-const COVER = {
-  Chest: 'bench', Back: 'pulldown', Shoulders: 'dbOhp', Biceps: 'dbCurl', Triceps: 'pushdown',
-  Quads: 'squat', 'Hamstrings & Glutes': 'rdl', Calves: 'calfRaise', Core: 'plank',
-}
 const SHORT = { 'Hamstrings & Glutes': 'Hams & Glutes' }
 
 export default function Builder({ onClose, onStart }) {
@@ -66,7 +62,7 @@ export default function Builder({ onClose, onStart }) {
             const on = muscles.includes(m)
             return (
               <button key={m} className={`muscle ${on ? 'on' : ''}`} onClick={() => toggle(m)} aria-pressed={on}>
-                <ExerciseImage id={COVER[m]} size="full" still />
+                <MuscleZoom muscle={m} />
                 <span className="muscle-name">{SHORT[m] || m}</span>
                 <span className="muscle-check">{on && <Icon.Check />}</span>
               </button>
@@ -82,6 +78,9 @@ export default function Builder({ onClose, onStart }) {
 
       {session ? (
         <section className="stack">
+          <div className="card target-card">
+            <BodyMap muscles={session.muscles} labels />
+          </div>
           <div className="row between" style={{ alignItems: 'flex-end' }}>
             <div>
               <div className="section-label" style={{ margin: 0 }}>{session.title}</div>

@@ -482,22 +482,34 @@ select.input { padding-right: 32px; }
 
 .muscle-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .muscle {
-  position: relative; border: 0; padding: 0; border-radius: var(--radius-sm); overflow: hidden; cursor: pointer;
-  aspect-ratio: 1; background: #fff; transition: transform 0.15s ease, box-shadow 0.2s ease;
+  position: relative; border: 0; padding: 8px 8px 10px; border-radius: var(--radius-sm); cursor: pointer;
+  background: var(--surface); display: flex; flex-direction: column; align-items: center; gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 .muscle:active { transform: scale(0.97); }
-.muscle .ex-img { position: absolute; inset: 0; border-radius: 0; }
-.muscle::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.62) 100%); }
-.muscle-name { position: absolute; left: 10px; right: 10px; bottom: 9px; z-index: 1; color: #fff; font-size: 14px; font-weight: 600; text-align: left; letter-spacing: -0.01em; line-height: 1.2; }
+.muscle .bodymap { width: 100%; height: auto; aspect-ratio: 1; display: block; border-radius: 10px; background: var(--bm-bg); }
+.bodymap.zoom polygon { stroke-width: 0.5; }
+.muscle-name { font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; line-height: 1.2; text-align: center; }
 .muscle-check {
-  position: absolute; top: 8px; right: 8px; z-index: 1; width: 24px; height: 24px; border-radius: 50%;
-  display: grid; place-items: center; background: rgba(255, 255, 255, 0.75); box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center; box-shadow: inset 0 0 0 1.5px var(--chart-dot);
 }
-.muscle-check svg { width: 13px; height: 13px; }
-.muscle.on { box-shadow: 0 0 0 3px var(--copper); }
+.muscle-check svg { width: 12px; height: 12px; }
+.muscle.on { box-shadow: inset 0 0 0 2px var(--copper); }
 .muscle.on .muscle-check { background: var(--copper); color: #fff; box-shadow: none; }
-.muscle:not(.on) .ex-img { opacity: 0.85; }
+.muscle:not(.on) .bm-on { opacity: 0.75; }
+
+/* Anatomy figure */
+:root { --bm-bg: #f7f1ed; --bm-base: #ead9d0; --bm-skin: #f3e9e3; --bm-hot-1: #d9733a; --bm-hot-2: #a94f22; --bm-line: #ffffff; }
+:root[data-theme='dark'] { --bm-bg: #241f20; --bm-base: #3b3133; --bm-skin: #2e2829; --bm-hot-1: #f29a63; --bm-hot-2: #cf6a33; --bm-line: #1c1c1e; }
+.bodymap polygon { stroke: var(--bm-line); stroke-width: 0.7; stroke-linejoin: round; transition: fill 0.25s ease, opacity 0.25s ease; }
+.bodymap .bm-off { fill: var(--bm-base); }
+.bodymap .bm-skin { fill: var(--bm-skin); }
+.bodymap .bm-on { fill: url(#bm-hot); }
+.bodymap .bm-label { font-size: 8px; fill: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+.target-card { padding: 20px 28px 14px; }
+.target-card .bodymap { width: 100%; max-width: 250px; display: block; margin: 0 auto; }
+.small-map .bodymap { max-width: 200px; }
 
 .build-card {
   display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; cursor: pointer;

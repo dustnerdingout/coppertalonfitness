@@ -3,6 +3,7 @@ import { GUIDE } from '../lib/guide.js'
 import { EXERCISES, COMPOUND } from '../lib/program.js'
 import { restSec, fmtRest } from '../lib/builder.js'
 import { Sheet } from './ui.jsx'
+import BodyMap from './BodyMap.jsx'
 
 const src = (f) => `${import.meta.env.BASE_URL}exercises/${f}`
 
@@ -48,6 +49,7 @@ export function ExerciseInfo({ id, onClose }) {
           <span className="pill">Rest {fmtRest(restSec(id))}</span>
           {COMPOUND.has(id) && <span className="pill copper">Compound</span>}
         </div>
+        <div className="card target-card small-map"><BodyMap muscles={[ex.muscle]} labels /></div>
         <p className="small"><b>Cue:</b> {ex.cue}</p>
         {g && (
           <div className="card">
