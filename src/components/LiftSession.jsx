@@ -6,13 +6,15 @@ import { todayStr, fmtDate } from '../lib/stats.js'
 import { Icon } from './Icons.jsx'
 import { Badge, Sheet } from './ui.jsx'
 import { ExerciseImage, ExerciseInfo } from './ExerciseVisual.jsx'
-import { buildCustom, restSec } from '../lib/builder.js'
+import { buildCustom } from '../lib/builder.js'
 import { fmtClock } from '../lib/runplans.js'
 import { warmupSets, plateMath, isBarbell } from '../lib/warmup.js'
+import { prepSession, workoutSettings, restFor, SET_TYPES, nextSetType, deloadExercise } from '../lib/training.js'
+import { ExerciseHistory, WorkoutSettingsSheet } from './TrainingSheets.jsx'
 
 // Short double beep and a buzz when rest is over
-function restDone() {
-  try {
+function restDone(opts = { sound: true, vibrate: true }) {
+  if (opts.sound) try {
     const ac = new (window.AudioContext || window.webkitAudioContext)()
     for (let i = 0; i < 2; i++) {
       const at = ac.currentTime + i * 0.2, o = ac.createOscillator(), g = ac.createGain()
@@ -20,7 +22,7 @@ function restDone() {
       o.connect(g).connect(ac.destination); o.start(at); o.stop(at + 0.16)
     }
   } catch { /* no audio */ }
-  navigator.vibrate?.([200, 100, 200])
+  if (opts.vibrate) navigator.vibrate?.([200, 100, 200])
 }
 
 const unitOf = (ex) => (ex.kind === 'time' ? 'sec' : 'reps')
@@ -32,15 +34,17 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
   const [swapIdx, setSwapIdx] = useState(null)
   const [adding, setAdding] = useState(false)
   const [info, setInfo] = useState(null)
+  const [histId, setHistId] = useState(null)
+  const [showSettings, setShowSettings] = useState(false)
   const [now, setNow] = useState(Date.now())
   const [rest, setRest] = useState(null) // { end, total }
   const beeped = useRef(false)
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 500); return () => clearInterval(t) }, [])
-  const startRest = (id) => { beeped.current = false; const sec = restSec(id); setRest({ end: Date.now() + sec * 1000, total: sec }) }
+  const startRest = (id) => { if (!workoutSettings(state).restAuto) return; beeped.current = false; const sec = restFor(state, id); setRest({ end: Date.now() + sec * 1000, total: sec }) }
   useEffect(() => {
     if (!rest || beeped.current || now < rest.end) return
     beeped.current = true
-    restDone()
+    restDone(workoutSettings(state))
     const t = setTimeout(() => setRest((r) => (r && Date.now() - r.end > 4000 ? null : r)), 5000)
     return () => clearTimeout(t)
   }, [now, rest])
@@ -54,13 +58,13 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
       if (d && (started || !initialFocus || d.focus === initialFocus)) {
         return !started && (d.date || null) !== (logDate || null) ? { draft: { ...d, date: logDate || undefined } } : {}
       }
-      const fresh = buildSession(initialFocus || nextFocus(s.lifts, s.rotation), s.lifts)
+      const fresh = prepSession(buildSession(initialFocus || nextFocus(s.lifts, s.rotation), s.lifts), s)
       return { draft: logDate ? { ...fresh, date: logDate } : fresh }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   useEffect(() => {
-    if (!draft && !summary) update((s) => (s.draft ? {} : { draft: buildSession(nextFocus(s.lifts, s.rotation), s.lifts) }))
+    if (!draft && !summary) update((s) => (s.draft ? {} : { draft: prepSession(buildSession(nextFocus(s.lifts, s.rotation), s.lifts), s) }))
   }, [draft, summary, update])
 
   if (summary) return <Summary summary={summary} onClose={onClose} />
@@ -114,17 +118,43 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
     }),
   }))
 
+  // Superset: link an exercise with the next one. No rest between them, rest after the last one in the pair.
+  const toggleSuperset = (ei) => setDraft((d) => {
+    const ex = d.exercises
+    const cur = ex[ei]
+    if (cur.superset) {
+      const g = cur.superset
+      return { ...d, exercises: ex.map((e) => (e.superset === g ? { ...e, superset: undefined } : e)) }
+    }
+    const nxt = ex[ei + 1]
+    if (!nxt) return d
+    // join the next exercise's superset if it already has one, otherwise start a new pair
+    const g = nxt.superset || 'ss' + Date.now().toString(36)
+    return { ...d, exercises: ex.map((e, i) => (i === ei || i === ei + 1 ? { ...e, superset: g } : e)) }
+  })
+  // true when this exercise is in a superset and isn't the last one of its group, so no rest yet
+  const restsInSuperset = (ei) => {
+    const g = draft.exercises[ei].superset
+    if (!g) return false
+    const idx = draft.exercises.map((e, i) => (e.superset === g ? i : -1)).filter((i) => i >= 0)
+    return ei !== idx.at(-1)
+  }
+
   const removeExercise = (ei) => setDraft((d) => ({ ...d, exercises: d.exercises.filter((_, i) => i !== ei) }))
 
   const switchFocus = (key) => {
     if (key === draft.focus) return
     if (anyDone && !confirm('Switch focus? Sets logged so far will be cleared.')) return
-    update((s) => ({ draft: buildSession(key, s.lifts) }))
+    update((s) => ({ draft: prepSession(buildSession(key, s.lifts), s) }))
   }
 
   const mixItUp = () => {
     if (anyDone && !confirm('Shuffle the accessory exercises? Sets on swapped exercises will be cleared.')) return
-    setDraft((d) => (isCustom ? { ...buildCustom(d.muscles, d.minutes || 60, lifts, { random: true }), startedAt: d.startedAt } : shuffleSession(d, lifts)))
+    setDraft((d) => {
+      const next = isCustom ? { ...buildCustom(d.muscles, d.minutes || 60, lifts, { random: true }), startedAt: d.startedAt } : shuffleSession(d, lifts)
+      // in a deload week, lighten only the exercises that changed
+      return d.deload ? { ...next, deload: true, exercises: next.exercises.map((e) => (d.exercises.includes(e) ? e : deloadExercise(e))) } : next
+    })
   }
 
   const discard = () => {
@@ -140,7 +170,7 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
         ...(e.effort ? { effort: e.effort } : {}),
         sets: e.sets
           .filter((s) => s.done || Number(s.reps) > 0)
-          .map((s) => ({ weight: Number(s.weight) || 0, reps: Number(s.reps) || 0 }))
+          .map((s) => ({ weight: Number(s.weight) || 0, reps: Number(s.reps) || 0, ...(s.type && s.type !== 'normal' ? { type: s.type } : {}) }))
           .filter((s) => s.reps > 0),
       }))
       .filter((e) => e.sets.length)
@@ -151,6 +181,7 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
     const entry = {
       date: draft.date || todayStr(),
       focus: draft.focus,
+      ...(draft.deload ? { deload: true } : {}),
       ...(isCustom ? { title: draft.title, muscles: draft.muscles } : {}),
       durationMin: Math.max(1, Math.round((Date.now() - draft.startedAt) / 60000)),
       exercises,
@@ -169,6 +200,7 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
     notify('Workout saved')
   }
 
+  const wsSet = workoutSettings(state)
   const doneSets = draft.exercises.reduce((t, e) => t + e.sets.filter((x) => x.done).length, 0)
   const totalSets = draft.exercises.reduce((t, e) => t + e.sets.length, 0)
   const volume = draft.exercises.reduce((t, e) => t + e.sets.filter((x) => x.done).reduce((a, x) => a + (Number(x.weight) || 0) * (Number(x.reps) || 0), 0), 0)
@@ -182,7 +214,10 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
           <div className="eyebrow">Strength{draft.date && draft.date !== todayStr() ? ` · logging for ${fmtDate(draft.date, { weekday: 'short', month: 'short', day: 'numeric' })}` : ''}</div>
           <h1>{focus.name}</h1>
         </div>
-        <button className="icon-btn" onClick={onClose} aria-label="Minimize"><Icon.X /></button>
+        <div className="row" style={{ gap: 8 }}>
+          <button className="icon-btn" onClick={() => setShowSettings(true)} aria-label="Workout settings"><Icon.Gear /></button>
+          <button className="icon-btn" onClick={onClose} aria-label="Minimize"><Icon.X /></button>
+        </div>
       </header>
 
       <div className="ls-stats num">
@@ -190,6 +225,13 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
         <div><span>Volume</span><b>{volume.toLocaleString()} lb</b></div>
         <div><span>Sets</span><b>{doneSets} / {totalSets}</b></div>
       </div>
+
+      {draft.deload && (
+        <div className="deload-banner">
+          <b>Deload week</b>
+          <span className="small">About 10% lighter and one less set. Recover now, progress next week.</span>
+        </div>
+      )}
 
       <div className="stack" style={{ gap: 10 }}>
         <div className="chips scroll-x">
@@ -214,13 +256,14 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
         const wu = warmupSets(e.id, e.sets[0]?.weight || e.rec.weight)
         const bb = isBarbell(e.id)
         return (
-          <div className={`card exercise ${allDone ? 'complete' : ''}`} key={e.id + ei}>
+          <div className={`card exercise ${allDone ? 'complete' : ''} ${e.superset ? 'in-ss' : ''} ${e.superset && draft.exercises[ei + 1]?.superset === e.superset ? 'ss-top' : ''} ${e.superset && draft.exercises[ei - 1]?.superset === e.superset ? 'ss-bottom' : ''}`} key={e.id + ei}>
+            {e.superset && draft.exercises[ei - 1]?.superset !== e.superset && <p className="ss-label">Superset · no rest between</p>}
             <div className="ex-head">
               <button className="ex-thumb" onClick={() => setInfo(e.id)} aria-label={`How to do ${ex.name}`}>
                 <ExerciseImage id={e.id} size={56} />
               </button>
               <div className="grow">
-                <h3 className="ex-name">{ex.name}</h3>
+                <button className="ex-name-btn" onClick={() => setHistId(e.id)}><h3 className="ex-name">{ex.name}</h3></button>
                 <p className="muted small">{ex.muscle} · {ex.sets} × {ex.reps[0]}–{ex.reps[1]}{ex.kind === 'time' ? 's' : ''}{isAnchor ? <span className="ex-main"> · Main lift</span> : null}</p>
               </div>
               <button className="icon-btn" onClick={() => setSwapIdx(ei)} aria-label="Swap exercise"><Icon.Swap /></button>
@@ -232,7 +275,7 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
               <span className="muted small grow">{e.rec.note}</span>
             </div>
 
-            {wu.length > 0 && (
+            {wu.length > 0 && wsSet.warmups && (
               <div className="warmup">
                 <p className="warmup-label">Warm-up <span className="muted">· not logged</span></p>
                 <div className="warmup-sets">
@@ -261,7 +304,9 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
                 const p = prev[si]
                 return (
                   <div className={`set-row ${x.done ? 'done' : ''}`} key={si}>
-                    <span className="n">{si + 1}</span>
+                    <button className={`n set-type ${x.type && x.type !== 'normal' ? 't-' + x.type : ''}`} onClick={() => setField(ei, si, { type: nextSetType(x.type) })} aria-label="Change set type" title={SET_TYPES[x.type || 'normal'].label}>
+                      {SET_TYPES[x.type || 'normal'].short || si + 1}
+                    </button>
                     <button className="prev num" disabled={!p} onClick={() => p && setField(ei, si, isWeight ? { weight: p.weight, reps: p.reps } : { reps: p.reps })} aria-label="Use previous">
                       {p ? (isWeight ? `${p.weight} × ${p.reps}` : `${p.reps}${ex.kind === 'time' ? 's' : ''}`) : '—'}
                     </button>
@@ -271,7 +316,7 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
                     )}
                     <input className="input" inputMode="numeric" placeholder={String(e.rec.reps)} value={x.reps} aria-label={`Set ${si + 1} reps`}
                       onChange={(ev) => setField(ei, si, { reps: ev.target.value.replace(/\D/g, '') })} />
-                    <button className={`set-done ${x.done ? 'on' : ''}`} onClick={() => { if (!x.done) startRest(e.id); toggleDone(ei, si) }} aria-label="Mark set done">
+                    <button className={`set-done ${x.done ? 'on' : ''}`} onClick={() => { if (!x.done && !restsInSuperset(ei)) startRest(e.id); toggleDone(ei, si) }} aria-label="Mark set done">
                       <Icon.Check />
                     </button>
                   </div>
@@ -291,8 +336,14 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
               </div>
             )}
             <div className="ex-foot">
-              <button className="btn sm ghost" onClick={() => setInfo(e.id)}>How to</button>
-              <button className="btn sm ghost muted-btn" onClick={() => removeExercise(ei)}><Icon.Trash />Remove</button>
+              <div className="row" style={{ gap: 14 }}>
+                <button className="btn sm ghost" onClick={() => setInfo(e.id)}>How to</button>
+                <button className="btn sm ghost" onClick={() => setHistId(e.id)}>History</button>
+                {(e.superset || ei < draft.exercises.length - 1) && (
+                  <button className="btn sm ghost" onClick={() => toggleSuperset(ei)}>{e.superset ? 'Unlink' : 'Superset'}</button>
+                )}
+              </div>
+              <button className="btn sm ghost muted-btn" onClick={() => removeExercise(ei)} aria-label="Remove exercise"><Icon.Trash /></button>
             </div>
           </div>
         )
@@ -300,7 +351,7 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
 
       <div className="sticky-bar">
         {rest && (
-          <div className={`rest ${restLeft <= 0 ? 'over' : ''}`}>
+          <div className={`rest-timer ${restLeft <= 0 ? 'over' : ''}`}>
             <div className="rest-bar"><span style={{ width: `${Math.max(0, Math.min(100, (restLeft / rest.total) * 100))}%` }} /></div>
             <div className="rest-row">
               <div>
@@ -345,6 +396,8 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
       )}
 
       {info && <ExerciseInfo id={info} onClose={() => setInfo(null)} />}
+      {histId && <ExerciseHistory id={histId} onClose={() => setHistId(null)} />}
+      {showSettings && <WorkoutSettingsSheet onClose={() => setShowSettings(false)} />}
 
       {adding && (
         <Sheet title="Add exercise" onClose={() => setAdding(false)}>

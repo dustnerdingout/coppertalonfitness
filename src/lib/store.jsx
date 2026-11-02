@@ -18,6 +18,9 @@ const EMPTY = {
   recipes: [],   // saved meals: { id, ts, name, servings, items, calories, protein, carbs, fat } (totals for the whole recipe)
   draft: null,   // in-progress lift session
   theme: 'system',
+  workout: {},       // workout settings, see WORKOUT_DEFAULTS in training.js
+  deloadSkip: null,  // Monday of a week where the scheduled deload is skipped
+  deloadForce: null, // Monday of a week deloaded early
 }
 
 function load() {

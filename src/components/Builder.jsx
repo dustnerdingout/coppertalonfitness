@@ -6,6 +6,7 @@ import { swapExercise, swapOptions, recommend } from '../lib/progression.js'
 import { ExerciseImage, ExerciseInfo } from './ExerciseVisual.jsx'
 import { Icon } from './Icons.jsx'
 import { Seg, Sheet } from './ui.jsx'
+import { prepSession } from '../lib/training.js'
 import BodyMap, { MuscleZoom } from './BodyMap.jsx'
 
 const SHORT = { 'Hamstrings & Glutes': 'Hams & Glutes' }
@@ -35,7 +36,7 @@ export default function Builder({ onClose, onStart }) {
   const start = () => {
     if (!session) return
     if (state.draft && state.draft.exercises.some((e) => e.sets.some((s) => s.done)) && !confirm('Replace the workout in progress?')) return
-    update(() => ({ draft: { ...session, startedAt: Date.now() } }))
+    update((st) => ({ draft: prepSession({ ...session, startedAt: Date.now() }, st) }))
     onStart()
   }
 

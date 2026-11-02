@@ -4,6 +4,9 @@ import { SLOTS, DAY_NAMES, ROTATIONS, DEFAULT_SCHEDULE } from '../lib/program.js
 import { computeTargets } from '../lib/nutrition.js'
 import { weightSummary, todayStr } from '../lib/stats.js'
 import { Seg } from './ui.jsx'
+import { WorkoutSettingsBody } from './TrainingSheets.jsx'
+import { workoutSettings, isDeloadWeek } from '../lib/training.js'
+import { mondayOf } from '../lib/plan.js'
 import { RUN_PLANS, planProgress } from '../lib/runplans.js'
 
 const ORDER = [1, 2, 3, 4, 5, 6, 0]
@@ -92,6 +95,12 @@ export default function Settings({ notify }) {
           ))}
         </div>
         {!custom && <p className="muted tiny">Auto: about 20% under your estimated maintenance ({auto.maintenance.toLocaleString()} cal), 1 g protein per lb of goal weight, 25% fat, rest carbs. Updates as your weight drops.</p>}
+      </div>
+
+      <div className="stack">
+        <h2 style={{ margin: '4px 2px 0' }}>Workouts</h2>
+        <WorkoutSettingsBody s={workoutSettings(state)} set={(patch) => update((st) => ({ workout: { ...(st.workout || {}), ...patch } }))}
+          state={state} update={update} mon={mondayOf(todayStr())} deloadNow={isDeloadWeek(state)} />
       </div>
 
       <div className="card stack">

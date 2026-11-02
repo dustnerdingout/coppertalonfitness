@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { MoveSheet, DaySheet } from './PlanSheets.jsx'
 import { ExerciseImage } from './ExerciseVisual.jsx'
 import { FOCUSES, RUN_TYPES, SLOTS, DAY_NAMES } from '../lib/program.js'
 import { nextFocus, runRecommendation, intervalLabel, intervalMinutes } from '../lib/progression.js'
-import { todayStr, weightSummary, DAY } from '../lib/stats.js'
+import { todayStr, weightSummary, DAY, fmtDate } from '../lib/stats.js'
 import { Icon } from './Icons.jsx'
 import { computeTargets, dayTotals } from '../lib/nutrition.js'
 import { planFor, datesBetween, addDays, slotsFor, isOverridden } from '../lib/plan.js'
@@ -14,6 +14,7 @@ import { EXERCISES } from '../lib/program.js'
 import { buildSession } from '../lib/progression.js'
 import { sessionMinutes } from '../lib/builder.js'
 import { recovery } from '../lib/recovery.js'
+import { prepSession } from '../lib/training.js'
 import BodyMap from './BodyMap.jsx'
 
 // Today's lift as a full preview: every exercise with its target, time estimate, and the muscles it hits
@@ -24,7 +25,7 @@ function WorkoutHero({ session, title, resume, onStart, onMove, onChange }) {
     <div className="card workout-hero">
       <div className="wh-top">
         <div className="grow">
-          <p className="eyebrow" style={{ color: 'var(--copper)' }}>{resume ? 'In progress' : "Today's workout"}</p>
+          <p className="eyebrow" style={{ color: 'var(--copper)' }}>{resume ? 'In progress' : "Today's workout"}{session.deload ? ' · Deload week' : ''}</p>
           <h2 className="wh-title">{title}</h2>
           <p className="muted small">{session.exercises.length} exercises · about {sessionMinutes(session.exercises)} min{resume ? ` · ${doneSets} sets done` : ''}</p>
         </div>
@@ -82,8 +83,8 @@ function RecoveryCard({ lifts }) {
 
 const slotIcon = { lift: Icon.Dumbbell, run: Icon.Run, mobility: Icon.Stretch, rest: Icon.Bed }
 
-function weekDates() {
-  const now = new Date()
+function weekDates(offset = 0) {
+  const now = new Date(Date.now() + offset * 7 * DAY)
   const monday = new Date(now)
   monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
   return Array.from({ length: 7 }, (_, i) => new Date(monday.getTime() + i * DAY))
@@ -93,6 +94,8 @@ export default function Today({ open, toggleTheme, dark, goTab, goDay, notify })
   const { state } = useStore()
   const [moving, setMoving] = useState(null)
   const [editing, setEditing] = useState(false)
+  const [weekOff, setWeekOff] = useState(0)
+  const swipe = useRef(null)
   const { profile, lifts, runs, mobility, weights, draft } = state
   const today = todayStr()
   const dow = new Date().getDay()
@@ -125,7 +128,7 @@ export default function Today({ open, toggleTheme, dark, goTab, goDay, notify })
 
   const renderSlot = (slot) => {
     if (slot === 'lift' && (draft || !didLift(today))) {
-      const session = draft || buildSession(nextKey, lifts)
+      const session = draft || prepSession(buildSession(nextKey, lifts), state)
       const f = FOCUSES[nextKey]
       return (
         <WorkoutHero key="lift" session={session} title={f ? f.name : draft?.title || 'Workout'} resume={!!draft}
@@ -218,8 +221,24 @@ export default function Today({ open, toggleTheme, dark, goTab, goDay, notify })
         </div>
       </div>
 
-      <div className="week">
-        {weekDates().map((d) => {
+      <div className="week-wrap">
+        <div className="row between week-head">
+          <button className="icon-btn sm" onClick={() => setWeekOff(weekOff - 1)} aria-label="Previous week"><Icon.ChevronLeft /></button>
+          <button className="small week-title" onClick={() => setWeekOff(0)}>
+            {weekOff === 0 ? 'This week' : weekOff === 1 ? 'Next week' : weekOff === -1 ? 'Last week' : `${fmtDate(todayStr(weekDates(weekOff)[0]))} to ${fmtDate(todayStr(weekDates(weekOff)[6]))}`}
+            {weekOff !== 0 && <span className="copper"> · Today</span>}
+          </button>
+          <button className="icon-btn sm" onClick={() => setWeekOff(weekOff + 1)} aria-label="Next week"><Icon.Chevron /></button>
+        </div>
+      <div className="week"
+        onPointerDown={(e) => { swipe.current = { x: e.clientX, y: e.clientY } }}
+        onPointerUp={(e) => {
+          const st = swipe.current; swipe.current = null
+          if (!st) return
+          const dx = e.clientX - st.x, dy = e.clientY - st.y
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { setWeekOff((w) => w + (dx < 0 ? 1 : -1)) }
+        }}>
+        {weekDates(weekOff).map((d) => {
           const ds = todayStr(d)
           const slots = slotsFor(state, ds)
           return (
@@ -236,6 +255,7 @@ export default function Today({ open, toggleTheme, dark, goTab, goDay, notify })
             </button>
           )
         })}
+      </div>
       </div>
 
       <section className="stack">
@@ -289,20 +309,56 @@ export default function Today({ open, toggleTheme, dark, goTab, goDay, notify })
       </section>
 
       <section className="stack">
-        <div className="section-label">Fuel</div>
-        <button className="card session" style={{ display: 'block', boxShadow: 'none' }} onClick={() => goTab('food')}>
-          <div className="row between">
-            <div>
-              <p className="muted small">{calLeft >= 0 ? 'Calories left' : 'Over target'}</p>
-              <div style={{ fontFamily: 'var(--display)', fontSize: 26, fontWeight: 700 }} className="num">{Math.abs(calLeft).toLocaleString()}</div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <p className="muted small">Protein</p>
-              <div style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700 }} className="num">{Math.round(eaten.protein)}<span className="muted small"> / {targets.protein} g</span></div>
-            </div>
-          </div>
-          <div className="bar light" style={{ marginTop: 10 }}><span style={{ width: `${Math.min(100, (eaten.protein / targets.protein) * 100)}%` }} /></div>
-        </button>
+        <div className="section-label">Today so far</div>
+        <div className="card day-summary">
+          {(() => {
+            const plan = planFor(state, [today])[today].filter((p) => p.tone !== 'rest')
+            const liftLog = lifts.find((l) => l.date === today)
+            const runLog = runs.filter((r) => r.date === today)
+            const w = weights.find((x) => x.date === today)
+            const doneCount = plan.filter((p) => p.done).length
+            return (
+              <>
+                <div className="ds-row">
+                  <span className="ds-icon"><Icon.Dumbbell /></span>
+                  <div className="grow">
+                    <p className="ds-label">Training</p>
+                    <p className="muted small">
+                      {plan.length ? plan.map((p) => `${p.label}${p.done ? ' ✓' : ''}`).join(' · ') : 'Rest day'}
+                    </p>
+                  </div>
+                  <b className="num">{plan.length ? `${doneCount}/${plan.length}` : '—'}</b>
+                </div>
+                {(liftLog || runLog.length > 0) && (
+                  <p className="muted tiny ds-sub num">
+                    {[liftLog && `Lifted ${liftLog.durationMin} min · ${liftLog.exercises.reduce((t, e) => t + e.sets.length, 0)} sets`, ...runLog.map((r) => `Ran ${r.minutes} min${r.distance ? ` · ${r.distance} mi` : ''}`)].filter(Boolean).join('  ·  ')}
+                  </p>
+                )}
+                <button className="ds-row" onClick={() => goTab('food')}>
+                  <span className="ds-icon"><Icon.Food /></span>
+                  <div className="grow">
+                    <p className="ds-label">Calories</p>
+                    <div className="bar light"><span style={{ width: `${Math.min(100, (eaten.calories / targets.calories) * 100)}%`, background: calLeft < 0 ? 'var(--warn)' : undefined }} /></div>
+                  </div>
+                  <b className="num">{Math.round(eaten.calories).toLocaleString()}<span className="muted small"> / {targets.calories.toLocaleString()}</span></b>
+                </button>
+                <button className="ds-row" onClick={() => goTab('food')}>
+                  <span className="ds-icon"><Icon.Flame /></span>
+                  <div className="grow">
+                    <p className="ds-label">Protein</p>
+                    <div className="bar light"><span style={{ width: `${Math.min(100, (eaten.protein / targets.protein) * 100)}%`, background: 'var(--good)' }} /></div>
+                  </div>
+                  <b className="num">{Math.round(eaten.protein)}<span className="muted small"> / {targets.protein} g</span></b>
+                </button>
+                <button className="ds-row" onClick={() => open({ type: 'weigh' })}>
+                  <span className="ds-icon"><Icon.Scale /></span>
+                  <div className="grow"><p className="ds-label">Weigh-in</p></div>
+                  {w ? <b className="num">{w.weight} lb</b> : <span className="copper small">Log weight</span>}
+                </button>
+              </>
+            )
+          })()}
+        </div>
       </section>
 
       <section className="stack">

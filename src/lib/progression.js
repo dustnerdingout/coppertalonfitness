@@ -4,14 +4,18 @@ const round5 = (n) => Math.max(0, Math.round(n / 5) * 5)
 export const byNewest = (a, b) => b.date.localeCompare(a.date) || (b.ts || 0) - (a.ts || 0)
 
 // All logged entries for one exercise, newest first
-export function exerciseHistory(exId, lifts) {
+// Past sessions for one exercise, newest first. Deload weeks are skipped unless asked for,
+// so a lighter week never drags your next suggestion down.
+export function exerciseHistory(exId, lifts, includeDeload = false) {
   return [...lifts]
+    .filter((l) => includeDeload || !l.deload)
     .sort(byNewest)
-    .map((l) => ({ date: l.date, entry: l.exercises.find((e) => e.id === exId) }))
+    .map((l) => ({ date: l.date, deload: !!l.deload, entry: l.exercises.find((e) => e.id === exId) }))
     .filter((h) => h.entry && h.entry.sets.some((s) => s.reps > 0))
 }
 
-const workingSets = (entry) => entry.sets.filter((s) => s.reps > 0)
+// Drop sets and rest-pause sets are extra work, not the measure of progress
+const workingSets = (entry) => entry.sets.filter((s) => s.reps > 0 && s.type !== 'drop' && s.type !== 'restpause')
 const topWeight = (sets) => Math.max(...sets.map((s) => Number(s.weight) || 0))
 
 /**
