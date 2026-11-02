@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { MoveSheet, DaySheet } from './PlanSheets.jsx'
+import { ExerciseImage } from './ExerciseVisual.jsx'
 import { FOCUSES, RUN_TYPES, SLOTS, DAY_NAMES } from '../lib/program.js'
 import { nextFocus, runRecommendation, intervalLabel, intervalMinutes } from '../lib/progression.js'
 import { todayStr, weightSummary, DAY } from '../lib/stats.js'
@@ -48,7 +49,7 @@ export default function Today({ open, toggleTheme, dark, goTab, notify }) {
     let title, sub, done, onClick
 
     if (slot === 'lift') {
-      const f = FOCUSES[nextKey]
+      const f = FOCUSES[nextKey] || { name: draft?.title || 'Workout', slots: draft?.exercises || [] }
       title = draft ? `Resume ${f.name}` : f.name
       sub = draft ? 'Workout in progress' : `Strength · ${f.slots.length} exercises`
       done = !draft && didLift(today)
@@ -149,6 +150,19 @@ export default function Today({ open, toggleTheme, dark, goTab, notify }) {
       </section>
       {moving && <MoveSheet date={today} slot={moving.slot} label={moving.label} notify={notify} onClose={() => setMoving(null)} />}
       {editing && <DaySheet date={today} onClose={() => setEditing(false)} />}
+
+      <button className="build-card" onClick={() => open({ type: 'build' })}>
+        <div className="build-imgs">
+          <ExerciseImage id="inclineDb" size={64} />
+          <ExerciseImage id="cableRow" size={64} />
+          <ExerciseImage id="lateralRaise" size={64} />
+        </div>
+        <div className="grow">
+          <h3>Build a workout</h3>
+          <p className="muted small">Pick muscles, get a 45 or 60 minute session</p>
+        </div>
+        <span className="chev"><Icon.Chevron /></span>
+      </button>
 
       <section className="stack">
         <div className="row between" style={{ margin: '8px 2px -4px' }}>

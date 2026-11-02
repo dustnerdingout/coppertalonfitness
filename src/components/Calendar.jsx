@@ -136,7 +136,7 @@ function WeekView({ date, setDate, goDay }) {
           const food = dayTotals(state.meals, d)
           const w = state.weights.find((x) => x.date === d)
           const details = [
-            lift && `${FOCUSES[lift.focus]?.name || 'Lift'} ${lift.durationMin}m`,
+            lift && `${FOCUSES[lift.focus]?.name || lift.title || 'Lift'} ${lift.durationMin}m`,
             ...runs.map((r) => `${RUN_TYPES[r.type]?.short} ${r.minutes}m${r.distance ? ` ${r.distance}mi` : ''}`),
             w && `${w.weight} lb`,
             food.calories > 0 && `${Math.round(food.calories)} cal`,

@@ -19,6 +19,7 @@ export const EXERCISES = {
   inclineBar:   W('Incline Barbell Press',    'Chest', 3, [6, 10], 5, 65, 'Bar to upper chest, wrists stacked.'),
   pushup:       { name: 'Push-Up', muscle: 'Chest', sets: 3, reps: [6, 20], inc: 1, start: 0, kind: 'bw', cue: 'Body in a straight line. Elevate hands to make it easier.' },
   cableFly:     W('Cable Fly',                'Chest', 3, [12, 15], 5, 20, 'Hug a big tree, squeeze in the middle.'),
+  inclineCableFly: W('Incline Cable Fly',     'Chest', 3, [12, 15], 5, 15, 'Bench at 30°, hands meet above the upper chest.'),
   pecDeck:      W('Pec Deck',                 'Chest', 3, [12, 15], 10, 60, 'Soft elbows, slow squeeze.'),
 
   // Triceps
@@ -47,6 +48,7 @@ export const EXERCISES = {
   // Shoulders
   ohp:          W('Overhead Press',           'Shoulders', 3, [6, 10], 5, 45, 'Glutes tight, press straight up past the face.'),
   dbOhp:        W('Seated DB Press',          'Shoulders', 3, [8, 12], 5, 25, 'Weight per hand. Press slightly in front.'),
+  arnold:       W('Arnold Press',             'Shoulders', 3, [8, 12], 5, 20, 'Weight per hand. Rotate palms out as you press.'),
   lateralRaise: W('DB Lateral Raise',         'Shoulders', 3, [12, 15], 5, 10, 'Weight per hand. Lead with the elbows.'),
   cableLateral: W('Cable Lateral Raise',      'Shoulders', 3, [12, 15], 5, 10, 'Behind the body, raise to shoulder height.'),
   rearDelt:     W('Reverse Pec Deck',         'Shoulders', 3, [12, 15], 10, 50, 'Arms wide, squeeze the rear delts.'),
@@ -66,14 +68,27 @@ export const EXERCISES = {
   dbRdl:        W('DB Romanian Deadlift',     'Hamstrings & Glutes', 3, [8, 12], 5, 35, 'Weight per hand. Hips back, flat back.'),
   hipThrust:    W('Hip Thrust',               'Hamstrings & Glutes', 3, [8, 12], 10, 95, 'Chin tucked, lock out with the glutes.'),
   legCurl:      W('Leg Curl',                 'Hamstrings & Glutes', 3, [10, 15], 5, 50, 'Hips down, slow lower.'),
+  gluteKickback:W('Cable Glute Kickback',     'Hamstrings & Glutes', 3, [12, 15], 5, 20, 'Reps per leg. Squeeze at the top, no arching.'),
   calfRaise:    W('Standing Calf Raise',      'Calves', 3, [10, 15], 10, 90, 'Full stretch, pause at the top.'),
+  seatedCalf:   W('Seated Calf Raise',        'Calves', 3, [12, 15], 10, 45, 'Slow stretch at the bottom, hold the top.'),
 
   // Core
   plank:        { name: 'Plank', muscle: 'Core', sets: 3, reps: [30, 60], inc: 5, start: 0, kind: 'time', cue: 'Squeeze glutes, ribs down.' },
   deadBug:      { name: 'Dead Bug', muscle: 'Core', sets: 3, reps: [8, 15], inc: 1, start: 0, kind: 'bw', cue: 'Low back glued to the floor.' },
   hangingKnee:  { name: 'Hanging Knee Raise', muscle: 'Core', sets: 3, reps: [8, 15], inc: 1, start: 0, kind: 'bw', cue: 'Curl the pelvis up, no swinging.' },
   cableCrunch:  W('Cable Crunch',             'Core', 3, [10, 15], 5, 50, 'Round the spine, elbows to knees.'),
+  russianTwist: { name: 'Russian Twist', muscle: 'Core', sets: 3, reps: [16, 30], inc: 2, start: 0, kind: 'bw', cue: 'Total reps. Rotate from the ribs, feet down if needed.' },
+  legRaise:     { name: 'Lying Leg Raise', muscle: 'Core', sets: 3, reps: [8, 15], inc: 1, start: 0, kind: 'bw', cue: 'Low back pressed down, lower slowly.' },
 }
+
+// Big multi-joint lifts. The workout builder puts these first and gives them longer rest.
+export const COMPOUND = new Set([
+  'bench', 'dbBench', 'machinePress', 'inclineDb', 'inclineBar', 'pushup', 'closeGrip',
+  'pulldown', 'closePulldown', 'cableRow', 'chestSupRow', 'dbRow', 'barbellRow',
+  'ohp', 'dbOhp', 'arnold',
+  'squat', 'gobletSquat', 'hackSquat', 'legPress', 'splitSquat', 'lunge', 'stepUp',
+  'trapDl', 'rdl', 'dbRdl', 'hipThrust',
+])
 
 // Each focus is a list of slots. A slot is a pool of interchangeable variations.
 // anchor: the main lift. It sticks with whatever you did last so progressive overload has room to work.

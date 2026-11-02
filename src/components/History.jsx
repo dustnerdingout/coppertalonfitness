@@ -14,7 +14,7 @@ export function EntryBody({ x }) {
       <>
         <div className="session tone-lift" style={{ padding: 0, border: 0, background: 'none', cursor: 'default' }}>
           <div className="icon"><Icon.Dumbbell /></div>
-          <div className="grow"><h3>{f ? f.name : 'Workout'}</h3><p className="muted small">{x.durationMin} min · {sets} sets</p></div>
+          <div className="grow"><h3>{f ? f.name : x.title || 'Workout'}</h3><p className="muted small">{x.durationMin} min · {sets} sets</p></div>
         </div>
         <div className="muted small" style={{ marginTop: 8 }}>
           {x.exercises.map((e) => (

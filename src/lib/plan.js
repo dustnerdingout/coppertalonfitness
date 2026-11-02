@@ -69,17 +69,18 @@ export function planFor(state, dates) {
       const tone = SLOTS[slot].tone
       let done = false
       let focus = null
+      let customTitle = null
       if (tone === 'lift') {
         const l = liftOn(d)
         done = !!l
-        if (l) focus = l.focus
+        if (l) { focus = l.focus; customTitle = l.title }
         else if (d >= today) focus = projectedFocus(d)
       } else if (tone === 'run') {
         done = runs.some((r) => r.date === d)
       } else if (tone === 'mobility') {
         done = mobility.some((m) => m.date === d)
       }
-      const label = tone === 'lift' && focus ? FOCUSES[focus].name : tone === 'run' ? RUN_TYPES[slot.slice(4)].name : SLOTS[slot].label
+      const label = tone === 'lift' && focus ? (FOCUSES[focus]?.name || customTitle || 'Strength') : tone === 'run' ? RUN_TYPES[slot.slice(4)].name : SLOTS[slot].label
       return { slot, tone, label, done, focus, missed: !done && tone !== 'rest' && d < today }
     })
   }

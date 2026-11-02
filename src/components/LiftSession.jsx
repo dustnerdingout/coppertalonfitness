@@ -5,15 +5,18 @@ import { buildSession, nextFocus, recommend, exerciseHistory, swapOptions, swapE
 import { todayStr, fmtDate } from '../lib/stats.js'
 import { Icon } from './Icons.jsx'
 import { Badge, Sheet } from './ui.jsx'
+import { ExerciseImage, ExerciseInfo } from './ExerciseVisual.jsx'
+import { buildCustom } from '../lib/builder.js'
 
 const unitOf = (ex) => (ex.kind === 'time' ? 'sec' : 'reps')
 
-export default function LiftSession({ onClose, notify }) {
+export default function LiftSession({ onClose, notify, onBuild }) {
   const { state, update, add } = useStore()
   const { draft, lifts, rotation } = state
   const [summary, setSummary] = useState(null)
   const [swapIdx, setSwapIdx] = useState(null)
   const [adding, setAdding] = useState(false)
+  const [info, setInfo] = useState(null)
 
   // Start a session if there isn't one in progress
   useEffect(() => {
@@ -23,7 +26,8 @@ export default function LiftSession({ onClose, notify }) {
   if (summary) return <Summary summary={summary} onClose={onClose} />
   if (!draft) return null
 
-  const focus = FOCUSES[draft.focus]
+  const isCustom = draft.focus === 'custom'
+  const focus = FOCUSES[draft.focus] || { name: draft.title || 'Custom workout' }
   const anyDone = draft.exercises.some((e) => e.sets.some((s) => s.done))
   const setDraft = (fn) => update((s) => ({ draft: fn(s.draft) }))
 
@@ -70,7 +74,7 @@ export default function LiftSession({ onClose, notify }) {
 
   const mixItUp = () => {
     if (anyDone && !confirm('Shuffle the accessory exercises? Sets on swapped exercises will be cleared.')) return
-    setDraft((d) => shuffleSession(d, lifts))
+    setDraft((d) => (isCustom ? { ...buildCustom(d.muscles, d.minutes || 60, lifts, { random: true }), startedAt: d.startedAt } : shuffleSession(d, lifts)))
   }
 
   const discard = () => {
@@ -96,6 +100,7 @@ export default function LiftSession({ onClose, notify }) {
     const entry = {
       date: todayStr(),
       focus: draft.focus,
+      ...(isCustom ? { title: draft.title, muscles: draft.muscles } : {}),
       durationMin: Math.max(1, Math.round((Date.now() - draft.startedAt) / 60000)),
       exercises,
     }
@@ -124,6 +129,7 @@ export default function LiftSession({ onClose, notify }) {
       </header>
 
       <div className="chips scroll-x">
+        <button className={`chip lg ${isCustom ? 'on lift' : ''}`} onClick={onBuild}><Icon.Plus />Pick muscles</button>
         {Object.entries(FOCUSES).map(([k, f]) => (
           <button key={k} className={`chip lg ${draft.focus === k ? 'on lift' : ''}`} onClick={() => switchFocus(k)}>{f.name}</button>
         ))}
@@ -138,10 +144,14 @@ export default function LiftSession({ onClose, notify }) {
         const ex = EXERCISES[e.id]
         const last = exerciseHistory(e.id, lifts)[0]
         const isWeight = ex.kind === 'weight'
-        const isAnchor = e.slot != null && FOCUSES[draft.focus].slots[e.slot]?.anchor
+        const isAnchor = e.slot != null && FOCUSES[draft.focus]?.slots[e.slot]?.anchor
         return (
           <div className="card exercise" key={e.id + ei}>
-            <div className="row between" style={{ alignItems: 'flex-start' }}>
+            <div className="row between" style={{ alignItems: 'flex-start', gap: 14 }}>
+              <button className="ex-thumb" onClick={() => setInfo(e.id)} aria-label={`How to do ${ex.name}`}>
+                <ExerciseImage id={e.id} size={76} />
+                <span>How to</span>
+              </button>
               <div className="grow">
                 <div className="row" style={{ gap: 6 }}>
                   <span className="pill">{ex.muscle}</span>
@@ -227,6 +237,8 @@ export default function LiftSession({ onClose, notify }) {
           </div>
         </Sheet>
       )}
+
+      {info && <ExerciseInfo id={info} onClose={() => setInfo(null)} />}
 
       {adding && (
         <Sheet title="Add exercise" onClose={() => setAdding(false)}>

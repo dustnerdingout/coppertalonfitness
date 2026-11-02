@@ -7,6 +7,7 @@ import Food from './components/Food.jsx'
 import Calendar from './components/Calendar.jsx'
 import Settings from './components/Settings.jsx'
 import Onboarding from './components/Onboarding.jsx'
+import Builder from './components/Builder.jsx'
 import { RunSheet, MobilitySheet, WeighSheet } from './components/Sheets.jsx'
 import { Toast } from './components/ui.jsx'
 import { Icon } from './components/Icons.jsx'
@@ -50,17 +51,26 @@ export default function App() {
     timer.current = setTimeout(() => setToast(''), 2200)
   }, [])
 
-  useEffect(() => { window.scrollTo(0, 0) }, [tab, modal?.type === 'lift'])
+  useEffect(() => { window.scrollTo(0, 0) }, [tab, modal?.type === 'lift', modal?.type === 'build'])
 
   if (!state.profile) return <div className="app"><Onboarding /></div>
 
   const close = () => setModal(null)
   const toggleTheme = () => update(() => ({ theme: dark ? 'light' : 'dark' }))
 
+  if (modal?.type === 'build') {
+    return (
+      <div className="app" style={{ paddingBottom: 120 }}>
+        <Builder onClose={close} onStart={() => setModal({ type: 'lift' })} />
+        <Toast msg={toast} />
+      </div>
+    )
+  }
+
   if (modal?.type === 'lift') {
     return (
       <div className="app" style={{ paddingBottom: 120 }}>
-        <LiftSession onClose={close} notify={notify} />
+        <LiftSession onClose={close} notify={notify} onBuild={() => setModal({ type: 'build' })} />
         <Toast msg={toast} />
       </div>
     )
