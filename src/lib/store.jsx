@@ -14,7 +14,8 @@ const EMPTY = {
   lifts: [],     // { id, date, ts, focus, durationMin, exercises: [{ id, sets: [{ weight, reps }] }] }
   runs: [],      // { id, date, ts, type, minutes, distance, rpe, pain, notes, plan }
   mobility: [],  // { id, date, ts, done: number }
-  meals: [],     // { id, date, ts, slot, name, calories, protein, carbs, fat }
+  meals: [],     // { id, date, ts, slot, name, calories, protein, carbs, fat, items? }
+  recipes: [],   // saved meals: { id, ts, name, servings, items, calories, protein, carbs, fat } (totals for the whole recipe)
   draft: null,   // in-progress lift session
   theme: 'system',
 }

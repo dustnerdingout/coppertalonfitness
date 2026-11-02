@@ -23,6 +23,16 @@ const defaultSlot = () => {
 
 export default function Food({ notify }) {
   const { state, add, remove } = useStore()
+  const baseName = (n) => n.replace(/ \(\d+(\.\d+)? servings?\)$/, '')
+  const saved = (m) => (state.recipes || []).some((r) => r.name === baseName(m.name))
+  const saveAsRecipe = (m) => {
+    if (saved(m)) return notify('Already in your recipes')
+    add('recipes', {
+      name: baseName(m.name), servings: 1, calories: m.calories, protein: m.protein, carbs: m.carbs, fat: m.fat,
+      items: m.items || [{ name: m.name, amount: '1 serving', calories: m.calories, protein: m.protein, carbs: m.carbs, fat: m.fat }],
+    })
+    notify('Saved to recipes')
+  }
   const [date, setDate] = useState(todayStr())
   const [sheet, setSheet] = useState(null) // null | { slot, prefill? }
   const ws = weightSummary(state.profile, state.weights)
@@ -92,6 +102,7 @@ export default function Food({ notify }) {
                       <p className="muted small num">P {m.protein} · C {m.carbs} · F {m.fat}</p>
                     </div>
                     <b className="num">{m.calories}</b>
+                    <button className={`icon-btn ${saved(m) ? 'saved' : ''}`} style={{ width: 32, height: 32 }} onClick={() => saveAsRecipe(m)} aria-label="Save as recipe"><Icon.Bookmark /></button>
                     <button className="icon-btn" style={{ width: 32, height: 32 }} onClick={() => remove('meals', m.id)} aria-label="Delete"><Icon.X /></button>
                   </div>
                 ))}
@@ -115,19 +126,43 @@ function MealSheet({ slot: initialSlot, date, onClose, onSave }) {
   const [mode, setMode] = useState('search')
   const [items, setItems] = useState([]) // ingredients in this meal
   const [mealName, setMealName] = useState('')
+  const [asRecipe, setAsRecipe] = useState(false)
+  const [servings, setServings] = useState('1')
+  const [editingId, setEditingId] = useState(null) // recipe being edited
+  const { add, update } = useStore()
 
   const total = items.reduce((t, i) => ({
     calories: t.calories + i.calories, protein: t.protein + i.protein, carbs: t.carbs + i.carbs, fat: t.fat + i.fat,
   }), { calories: 0, protein: 0, carbs: 0, fat: 0 })
 
+  const defaultName = items.length === 1 ? items[0].name : items.map((i) => i.name).join(', ')
+  const n = Math.max(0.5, Number(servings) || 1)
+  const perServing = (asRecipe || editingId) && n !== 1
+
+  const saveRecipe = () => {
+    const recipe = {
+      name: mealName.trim() || defaultName, servings: n, items,
+      calories: Math.round(total.calories), protein: Math.round(total.protein), carbs: Math.round(total.carbs), fat: Math.round(total.fat),
+    }
+    if (editingId) update((s) => ({ recipes: s.recipes.map((r) => (r.id === editingId ? { ...r, ...recipe } : r)) }))
+    else add('recipes', recipe)
+    return recipe
+  }
+
   const logMeal = () => {
     if (!items.length) return
-    const name = mealName.trim() || (items.length === 1 ? items[0].name : items.map((i) => i.name).join(', '))
+    const name = mealName.trim() || defaultName
+    if (asRecipe || editingId) saveRecipe()
+    const k = perServing ? 1 / n : 1
     onSave({
-      date, slot, name,
-      calories: Math.round(total.calories), protein: Math.round(total.protein), carbs: Math.round(total.carbs), fat: Math.round(total.fat),
+      date, slot, name: perServing ? `${name} (1 serving)` : name,
+      calories: Math.round(total.calories * k), protein: Math.round(total.protein * k), carbs: Math.round(total.carbs * k), fat: Math.round(total.fat * k),
       items,
     })
+  }
+
+  const editRecipe = (r) => {
+    setItems(r.items); setMealName(r.name); setServings(String(r.servings || 1)); setEditingId(r.id); setAsRecipe(true); setMode('search')
   }
 
   return (
@@ -136,7 +171,7 @@ function MealSheet({ slot: initialSlot, date, onClose, onSave }) {
         <div className="chips">
           {MEAL_SLOTS.map((m) => <button key={m} className={`chip lg ${slot === m ? 'on lift' : ''}`} onClick={() => setSlot(m)}>{m}</button>)}
         </div>
-        <Seg options={[['search', 'Search foods'], ['manual', 'Quick add']]} value={mode} onChange={setMode} />
+        <Seg options={[['search', 'Search foods'], ['recipes', `Recipes${state.recipes?.length ? ` (${state.recipes.length})` : ''}`], ['manual', 'Quick add']]} value={mode} onChange={setMode} />
 
         {mode === 'search' ? (
           <>
@@ -161,11 +196,27 @@ function MealSheet({ slot: initialSlot, date, onClose, onSave }) {
             <FoodSearch date={date} slot={slot} recents={recentFoods(state.meals)} onPick={(it) => setItems((x) => [...x, it])} onRelog={onSave} />
             {items.length > 0 && (
               <div className="sheet-sticky">
-                <input className="input" placeholder={items.length > 1 ? 'Name this meal (optional)' : items[0].name} value={mealName} onChange={(e) => setMealName(e.target.value)} />
-                <button className="btn primary block" onClick={logMeal}><Icon.Check />Log {items.length > 1 ? `${items.length} items · ` : ''}{Math.round(total.calories)} cal</button>
+                <input className="input" placeholder={asRecipe || editingId ? `Recipe name: ${defaultName}` : items.length > 1 ? 'Name this meal (optional)' : items[0].name} value={mealName} onChange={(e) => setMealName(e.target.value)} />
+                <div className="row between">
+                  {editingId ? <span className="small" style={{ fontWeight: 600 }}>Editing recipe</span> : (
+                    <label className="toggle small"><input type="checkbox" checked={asRecipe} onChange={(e) => setAsRecipe(e.target.checked)} />Save as recipe</label>
+                  )}
+                  {(asRecipe || editingId) && (
+                    <label className="row small" style={{ gap: 6 }}>Makes
+                      <input className="input num serv-input" inputMode="decimal" value={servings} onChange={(e) => setServings(e.target.value.replace(/[^\d.]/g, ''))} />
+                      servings
+                    </label>
+                  )}
+                </div>
+                <div className="row">
+                  {editingId && <button className="btn grow" onClick={() => { saveRecipe(); onClose() }}>Save changes</button>}
+                  <button className="btn primary grow" onClick={logMeal}><Icon.Check />Log {perServing ? `1 serving · ${Math.round(total.calories / n)}` : `${items.length > 1 ? `${items.length} items · ` : ''}${Math.round(total.calories)}`} cal</button>
+                </div>
               </div>
             )}
           </>
+        ) : mode === 'recipes' ? (
+          <RecipeList date={date} slot={slot} onSave={onSave} onEdit={editRecipe} />
         ) : (
           <ManualEntry date={date} slot={slot} onSave={onSave} />
         )}
@@ -212,7 +263,8 @@ function FoodSearch({ date, slot, recents, onPick, onRelog }) {
     const grams = u.g * (Number(picking.qty) || 0)
     const m = macrosFor(food, grams)
     const step = u.label === 'g' ? 10 : u.label === 'oz' ? 1 : 0.5
-    const amount = `${fmtQty(Number(picking.qty) || 0)} ${u.label === 'g' || u.label === 'oz' ? u.label : u.label.replace(/^1\s+/, '')}`
+    const q = Number(picking.qty) || 0
+    const amount = u.label === 'g' || u.label === 'oz' ? `${fmtQty(q)} ${u.label}` : q === 1 ? u.label : `${fmtQty(q)} × ${u.label}`
     return (
       <div className="card stack">
         <div>
@@ -299,6 +351,76 @@ function FoodSearch({ date, slot, recents, onPick, onRelog }) {
         </>
       )}
       <p className="muted tiny center">Nutrition data: USDA FoodData (SR28) and Open Food Facts.</p>
+    </div>
+  )
+}
+
+function RecipeList({ date, slot, onSave, onEdit }) {
+  const { state, remove } = useStore()
+  const recipes = [...(state.recipes || [])].sort((a, b) => a.name.localeCompare(b.name))
+  const [open, setOpen] = useState(null)
+  const [qty, setQty] = useState(1)
+  const [q, setQ] = useState('')
+  const shown = recipes.filter((r) => r.name.toLowerCase().includes(q.toLowerCase()))
+
+  if (!recipes.length) {
+    return (
+      <div className="card empty">
+        <p style={{ fontWeight: 600, color: 'var(--ink)' }}>No recipes yet</p>
+        <p className="small" style={{ marginTop: 6 }}>Build a meal in Search foods and tick "Save as recipe", or tap the bookmark on any meal you've logged.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="stack">
+      {recipes.length > 6 && (
+        <div className="search-box"><Icon.Search /><input className="input" placeholder="Search your recipes" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+      )}
+      <div className="card food-list">
+        {shown.map((r) => {
+          const per = (k) => Math.round((r[k] / (r.servings || 1)) * qty)
+          const isOpen = open === r.id
+          return (
+            <div key={r.id} className={`recipe ${isOpen ? 'open' : ''}`}>
+              <button className="food-row" onClick={() => { setOpen(isOpen ? null : r.id); setQty(1) }}>
+                <div className="grow">
+                  <p className="food-name">{r.name}</p>
+                  <p className="muted tiny">{r.items.length} item{r.items.length === 1 ? '' : 's'} · {Math.round(r.calories / (r.servings || 1))} cal per serving{r.servings > 1 ? ` · makes ${r.servings}` : ''}</p>
+                </div>
+                <Icon.Chevron />
+              </button>
+              {isOpen && (
+                <div className="recipe-body stack">
+                  <p className="muted tiny">{r.items.map((i) => `${i.name} ${i.amount}`).join(' · ')}</p>
+                  <div className="row">
+                    <span className="small grow">Servings</span>
+                    <div className="amount-row" style={{ gridTemplateColumns: '40px 70px 40px' }}>
+                      <button className="icon-btn" onClick={() => setQty(Math.max(0.5, qty - 0.5))} aria-label="Less">−</button>
+                      <input className="input num" value={qty} readOnly />
+                      <button className="icon-btn" onClick={() => setQty(qty + 0.5)} aria-label="More">+</button>
+                    </div>
+                  </div>
+                  <div className="macro-preview num">
+                    <div><b>{per('calories')}</b><span>cal</span></div>
+                    <div><b>{per('protein')}</b><span>protein</span></div>
+                    <div><b>{per('carbs')}</b><span>carbs</span></div>
+                    <div><b>{per('fat')}</b><span>fat</span></div>
+                  </div>
+                  <div className="row">
+                    <button className="btn sm ghost danger" onClick={() => confirm(`Delete "${r.name}"?`) && remove('recipes', r.id)}><Icon.Trash />Delete</button>
+                    <button className="btn sm" onClick={() => onEdit(r)}>Edit</button>
+                    <button className="btn primary grow" onClick={() => onSave({
+                      date, slot, name: qty === 1 && r.servings === 1 ? r.name : `${r.name} (${qty} serving${qty === 1 ? '' : 's'})`,
+                      calories: per('calories'), protein: per('protein'), carbs: per('carbs'), fat: per('fat'), items: r.items,
+                    })}><Icon.Check />Log {per('calories')} cal</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

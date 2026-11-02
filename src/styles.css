@@ -428,6 +428,16 @@ select.input { padding-right: 32px; }
 .sheet-sticky { position: sticky; bottom: calc(-1 * (env(safe-area-inset-bottom) + 24px)); margin: 0 -18px -24px; padding: 12px 18px calc(env(safe-area-inset-bottom) + 18px); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 0.5px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
 .sheet-sticky .input { background: var(--surface); }
 
+.serv-input { width: 56px !important; height: 34px !important; padding: 0 6px !important; text-align: center; }
+.recipe { border-bottom: 0.5px solid var(--border); }
+.recipe:last-child { border-bottom: 0; }
+.recipe .food-row { border-bottom: 0; }
+.recipe .food-row > svg { color: var(--muted); transition: transform 0.2s ease; }
+.recipe.open .food-row > svg { transform: rotate(90deg); }
+.recipe-body { padding: 0 0 14px; }
+.icon-btn.saved { color: var(--copper); }
+.icon-btn.saved svg { fill: currentColor; }
+
 /* ---------- Progress ---------- */
 .heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 3px; }
 .heat i { aspect-ratio: 1; border-radius: 3px; background: var(--surface-2); display: block; }
