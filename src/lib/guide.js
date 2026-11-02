@@ -14,7 +14,14 @@ export const GUIDE = {
    "When you are done, place the bar back in the rack."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "dbBench": {
   "frames": [
@@ -29,7 +36,14 @@ export const GUIDE = {
    "Repeat the movement for the prescribed amount of repetitions of your training program."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "machinePress": {
   "frames": [
@@ -46,7 +60,14 @@ export const GUIDE = {
    "When finished step on the lever again and slowly get the handles back to their original place."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "inclineDb": {
   "frames": [
@@ -63,7 +84,14 @@ export const GUIDE = {
    "When you are done, place the dumbbells back on your thighs and then on the floor. This is the safest manner to release the dumbbells."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "inclineBar": {
   "frames": [
@@ -78,7 +106,14 @@ export const GUIDE = {
    "When you are done, place the bar back in the rack."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "pushup": {
   "frames": [
@@ -92,7 +127,14 @@ export const GUIDE = {
    "After a brief pause at the top contracted position, you can begin to lower yourself downward again for as many repetitions as needed."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "cableFly": {
   "frames": [
@@ -107,7 +149,13 @@ export const GUIDE = {
    "Hold for a second at the starting position and repeat the movement for the prescribed amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids"
+  ]
  },
  "pecDeck": {
   "frames": [
@@ -122,7 +170,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": []
  },
  "inclineCableFly": {
   "frames": [
@@ -138,7 +190,13 @@ export const GUIDE = {
    "Repeat the movement for the prescribed amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids"
+  ]
  },
  "pushdown": {
   "frames": [
@@ -153,7 +211,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": []
  },
  "ohTriExt": {
   "frames": [
@@ -168,7 +230,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": []
  },
  "skull": {
   "frames": [
@@ -182,7 +248,13 @@ export const GUIDE = {
    "Repeat."
   ],
   "equipment": "e-z curl bar",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": [
+   "forearm"
+  ]
  },
  "closeGrip": {
   "frames": [
@@ -197,7 +269,14 @@ export const GUIDE = {
    "When you are done, place the bar back in the rack."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": [
+   "chest",
+   "deltoids"
+  ]
  },
  "pulldown": {
   "frames": [
@@ -213,7 +292,14 @@ export const GUIDE = {
    "Repeat this motion for the prescribed amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps",
+   "deltoids"
+  ]
  },
  "closePulldown": {
   "frames": [
@@ -229,7 +315,14 @@ export const GUIDE = {
    "6. Repeat this motion for the prescribed amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps",
+   "deltoids"
+  ]
  },
  "cableRow": {
   "frames": [
@@ -244,7 +337,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps",
+   "deltoids"
+  ]
  },
  "chestSupRow": {
   "frames": [
@@ -260,7 +360,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps"
+  ]
  },
  "dbRow": {
   "frames": [
@@ -277,7 +383,14 @@ export const GUIDE = {
    "Switch sides and repeat again with the other arm."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps",
+   "deltoids"
+  ]
  },
  "barbellRow": {
   "frames": [
@@ -291,7 +404,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps",
+   "deltoids"
+  ]
  },
  "straightArm": {
   "frames": [
@@ -306,7 +426,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": []
  },
  "dbCurl": {
   "frames": [
@@ -320,7 +444,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": [
+   "forearm"
+  ]
  },
  "ezCurl": {
   "frames": [
@@ -335,7 +465,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "e-z curl bar",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": []
  },
  "hammer": {
   "frames": [
@@ -350,7 +484,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": []
  },
  "inclineCurl": {
   "frames": [
@@ -364,7 +502,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": []
  },
  "cableCurl": {
   "frames": [
@@ -378,7 +520,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": []
  },
  "preacher": {
   "frames": [
@@ -393,7 +539,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": []
  },
  "ohp": {
   "frames": [
@@ -409,7 +559,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": [
+   "triceps"
+  ]
  },
  "dbOhp": {
   "frames": [
@@ -425,7 +581,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": [
+   "triceps"
+  ]
  },
  "arnold": {
   "frames": [
@@ -440,7 +602,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": [
+   "triceps"
+  ]
  },
  "lateralRaise": {
   "frames": [
@@ -454,7 +622,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": []
  },
  "cableLateral": {
   "frames": [
@@ -471,7 +643,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions. Tip: Maintain upper arms perpendicular to torso and a fixed elbow position (10 degree to 30 degree angle) throughout exercise."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": [
+   "trapezius",
+   "upper-back"
+  ]
  },
  "rearDelt": {
   "frames": [
@@ -487,7 +666,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": []
  },
  "facePull": {
   "frames": [
@@ -498,7 +681,13 @@ export const GUIDE = {
    "Facing a high pulley with a rope or dual handles attached, pull the weight directly towards your face, separating your hands as you do so. Keep your upper arms parallel to the ground."
   ],
   "equipment": "cable",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": [
+   "upper-back"
+  ]
  },
  "squat": {
   "frames": [
@@ -514,7 +703,16 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ]
  },
  "gobletSquat": {
   "frames": [
@@ -527,7 +725,16 @@ export const GUIDE = {
    "At the bottom position, pause and use your elbows to push your knees out. Return to the starting position, and repeat for 10-20 repetitions."
   ],
   "equipment": "kettlebells",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "deltoids",
+   "gluteal",
+   "hamstring"
+  ]
  },
  "hackSquat": {
   "frames": [
@@ -544,7 +751,15 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring"
+  ]
  },
  "legPress": {
   "frames": [
@@ -559,7 +774,15 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions and ensure to lock the safety pins properly once you are done. You do not want that platform falling on you fully loaded."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring"
+  ]
  },
  "legExt": {
   "frames": [
@@ -573,7 +796,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of times."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": []
  },
  "splitSquat": {
   "frames": [
@@ -587,7 +814,14 @@ export const GUIDE = {
    "At the bottom of the movement, drive through the heel to extend the knee and hip to return to the starting position."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "gluteal",
+   "hamstring"
+  ]
  },
  "lunge": {
   "frames": [
@@ -601,7 +835,15 @@ export const GUIDE = {
    "Repeat the movement for the recommended amount of repetitions and then perform with the left leg."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring"
+  ]
  },
  "stepUp": {
   "frames": [
@@ -615,7 +857,16 @@ export const GUIDE = {
    "Repeat with the right leg for the recommended amount of repetitions and then perform with the left leg."
   ],
   "equipment": "dumbbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ]
  },
  "trapDl": {
   "frames": [
@@ -629,7 +880,14 @@ export const GUIDE = {
    "At the completion of the movement, lower the weight back to the ground under control."
   ],
   "equipment": "other",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "gluteal",
+   "hamstring"
+  ]
  },
  "rdl": {
   "frames": [
@@ -644,7 +902,15 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "hamstring"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "lower-back"
+  ]
  },
  "dbRdl": {
   "frames": [
@@ -659,7 +925,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "hamstring"
+  ],
+  "secondary": [
+   "gluteal",
+   "lower-back"
+  ]
  },
  "hipThrust": {
   "frames": [
@@ -672,7 +945,14 @@ export const GUIDE = {
    "Begin the movement by driving through your feet, extending your hips vertically through the bar. Your weight should be supported by your shoulder blades and your feet. Extend as far as possible, then reverse the motion to return to the starting position."
   ],
   "equipment": "barbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "gluteal"
+  ],
+  "secondary": [
+   "calves",
+   "hamstring"
+  ]
  },
  "legCurl": {
   "frames": [
@@ -686,7 +966,11 @@ export const GUIDE = {
    "As you inhale, bring the legs back to the initial position. Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "hamstring"
+  ],
+  "secondary": []
  },
  "gluteKickback": {
   "frames": [
@@ -700,7 +984,13 @@ export const GUIDE = {
    "Continue to alternate legs until all of the recommended repetitions have been performed."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "gluteal"
+  ],
+  "secondary": [
+   "hamstring"
+  ]
  },
  "calfRaise": {
   "frames": [
@@ -715,7 +1005,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "calves"
+  ],
+  "secondary": []
  },
  "seatedCalf": {
   "frames": [
@@ -731,7 +1025,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "calves"
+  ],
+  "secondary": []
  },
  "plank": {
   "frames": [
@@ -743,7 +1041,12 @@ export const GUIDE = {
    "Keep your body straight at all times, and hold this position as long as possible. To increase difficulty, an arm or leg can be raised."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": []
  },
  "deadBug": {
   "frames": [
@@ -760,7 +1063,12 @@ export const GUIDE = {
    "Repeat on the opposite side, alternating until the set is complete."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": []
  },
  "hangingKnee": {
   "frames": [
@@ -774,7 +1082,12 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "body only",
-  "level": "expert"
+  "level": "expert",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": []
  },
  "cableCrunch": {
   "frames": [
@@ -790,7 +1103,12 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": []
  },
  "russianTwist": {
   "frames": [
@@ -805,7 +1123,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "body only",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": [
+   "lower-back"
+  ]
  },
  "legRaise": {
   "frames": [
@@ -819,7 +1144,12 @@ export const GUIDE = {
    "Now, as you inhale, slowly lower your legs back down to the starting position."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": []
  },
  "declineBench": {
   "frames": [
@@ -835,7 +1165,14 @@ export const GUIDE = {
    "When you are done, place the bar back in the rack."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "dbFly": {
   "frames": [
@@ -850,7 +1187,11 @@ export const GUIDE = {
    "Hold for a second at the contracted position and repeat the movement for the prescribed amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": []
  },
  "inclineDbFly": {
   "frames": [
@@ -866,7 +1207,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids"
+  ]
  },
  "lowCableFly": {
   "frames": [
@@ -880,7 +1227,13 @@ export const GUIDE = {
    "Return your arms back to the starting position after a brief pause."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids"
+  ]
  },
  "smithIncline": {
   "frames": [
@@ -895,7 +1248,14 @@ export const GUIDE = {
    "When you are done, place the bar back in the rack."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "chestDip": {
   "frames": [
@@ -909,7 +1269,14 @@ export const GUIDE = {
    "Repeat the movement for the prescribed amount of repetitions."
   ],
   "equipment": "other",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "neutralDbPress": {
   "frames": [
@@ -923,7 +1290,14 @@ export const GUIDE = {
    "Pause, then extend the elbow and return to the starting position."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "machineIncline": {
   "frames": [
@@ -936,7 +1310,14 @@ export const GUIDE = {
    "After a brief pause at the top, return the weight just above the start position, keeping tension on the muscles by not returning the weight to the stops until the set is complete."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps"
+  ]
  },
  "chinUp": {
   "frames": [
@@ -951,7 +1332,14 @@ export const GUIDE = {
    "Repeat this motion for the prescribed amount of repetitions."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps",
+   "forearm"
+  ]
  },
  "bandPullUp": {
   "frames": [
@@ -965,7 +1353,15 @@ export const GUIDE = {
    "After a brief pause, return to the starting position."
   ],
   "equipment": "other",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "abs",
+   "forearm",
+   "obliques"
+  ]
  },
  "tBarRow": {
   "frames": [
@@ -980,7 +1376,13 @@ export const GUIDE = {
    "After a brief pause, return to the starting position."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps"
+  ]
  },
  "machineHighRow": {
   "frames": [
@@ -994,7 +1396,11 @@ export const GUIDE = {
    "For multiple repetitions, avoid completely returning the weight to the stops to keep tension on the muscles being worked."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": []
  },
  "oneArmCableRow": {
   "frames": [
@@ -1010,7 +1416,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions and then perform the same movement with the right hand."
   ],
   "equipment": "cable",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps",
+   "trapezius"
+  ]
  },
  "invertedRow": {
   "frames": [
@@ -1025,7 +1438,11 @@ export const GUIDE = {
    "Repeat for the desired number of repetitions."
   ],
   "equipment": null,
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": []
  },
  "dbPullover": {
   "frames": [
@@ -1041,7 +1458,15 @@ export const GUIDE = {
    "Hold the weight on the initial position for a second and repeat the motion for the prescribed number of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "chest"
+  ],
+  "secondary": [
+   "deltoids",
+   "triceps",
+   "upper-back"
+  ]
  },
  "underhandPulldown": {
   "frames": [
@@ -1057,7 +1482,14 @@ export const GUIDE = {
    "Repeat this motion for the prescribed amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps",
+   "deltoids"
+  ]
  },
  "backExt": {
   "frames": [
@@ -1073,7 +1505,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "other",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "lower-back"
+  ],
+  "secondary": [
+   "gluteal",
+   "hamstring"
+  ]
  },
  "underhandRow": {
   "frames": [
@@ -1088,7 +1527,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "upper-back"
+  ],
+  "secondary": [
+   "biceps",
+   "deltoids"
+  ]
  },
  "bbShrug": {
   "frames": [
@@ -1102,7 +1548,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "trapezius"
+  ],
+  "secondary": []
  },
  "dbShrug": {
   "frames": [
@@ -1116,7 +1566,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "trapezius"
+  ],
+  "secondary": []
  },
  "frontRaise": {
   "frames": [
@@ -1130,7 +1584,11 @@ export const GUIDE = {
    "Continue alternating in this fashion until all of the recommended amount of repetitions have been performed for each arm."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": []
  },
  "uprightRow": {
   "frames": [
@@ -1144,7 +1602,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "trapezius"
+  ],
+  "secondary": [
+   "deltoids"
+  ]
  },
  "machineOhp": {
   "frames": [
@@ -1159,7 +1623,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": [
+   "triceps"
+  ]
  },
  "rearDeltRaise": {
   "frames": [
@@ -1175,7 +1645,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": []
  },
  "cableRearDelt": {
   "frames": [
@@ -1189,7 +1663,11 @@ export const GUIDE = {
    "Pause at the end of the motion before returning the handles to the start position."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": []
  },
  "pushPress": {
   "frames": [
@@ -1198,7 +1676,14 @@ export const GUIDE = {
   ],
   "steps": [],
   "equipment": "barbell",
-  "level": "expert"
+  "level": "expert",
+  "primary": [
+   "deltoids"
+  ],
+  "secondary": [
+   "quadriceps",
+   "triceps"
+  ]
  },
  "bbCurl": {
   "frames": [
@@ -1213,7 +1698,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": [
+   "forearm"
+  ]
  },
  "concentrationCurl": {
   "frames": [
@@ -1228,7 +1719,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions. Then repeat the movement with the left arm."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": [
+   "forearm"
+  ]
  },
  "spiderCurl": {
   "frames": [
@@ -1245,7 +1742,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "e-z curl bar",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": []
  },
  "ropeHammer": {
   "frames": [
@@ -1261,7 +1762,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": []
  },
  "reverseCurl": {
   "frames": [
@@ -1275,7 +1780,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": [
+   "forearm"
+  ]
  },
  "machinePreacher": {
   "frames": [
@@ -1290,7 +1801,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": []
  },
  "zottman": {
   "frames": [
@@ -1308,7 +1823,13 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "biceps"
+  ],
+  "secondary": [
+   "forearm"
+  ]
  },
  "benchDip": {
   "frames": [
@@ -1322,7 +1843,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": [
+   "chest",
+   "deltoids"
+  ]
  },
  "tricepDip": {
   "frames": [
@@ -1336,7 +1864,14 @@ export const GUIDE = {
    "Repeat the movement for the prescribed amount of repetitions."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": [
+   "chest",
+   "deltoids"
+  ]
  },
  "dbOhExt": {
   "frames": [
@@ -1351,7 +1886,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": []
  },
  "vBarPushdown": {
   "frames": [
@@ -1366,7 +1905,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": []
  },
  "reversePushdown": {
   "frames": [
@@ -1381,7 +1924,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": []
  },
  "kickback": {
   "frames": [
@@ -1395,7 +1942,11 @@ export const GUIDE = {
    "Repeat the movement for the prescribed amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": []
  },
  "closePushup": {
   "frames": [
@@ -1409,7 +1960,14 @@ export const GUIDE = {
    "After a second pause at the contracted position, repeat the movement for the prescribed amount of repetitions."
   ],
   "equipment": "body only",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": [
+   "chest",
+   "deltoids"
+  ]
  },
  "lyingDbExt": {
   "frames": [
@@ -1423,7 +1981,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "triceps"
+  ],
+  "secondary": [
+   "chest",
+   "deltoids"
+  ]
  },
  "frontSquat": {
   "frames": [
@@ -1439,7 +2004,15 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "barbell",
-  "level": "expert"
+  "level": "expert",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring"
+  ]
  },
  "reverseLunge": {
   "frames": [
@@ -1453,7 +2026,15 @@ export const GUIDE = {
    "Now repeat with the opposite leg."
   ],
   "equipment": "dumbbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring"
+  ]
  },
  "smithSquat": {
   "frames": [
@@ -1469,7 +2050,16 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ]
  },
  "narrowLegPress": {
   "frames": [
@@ -1484,7 +2074,15 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions and ensure to lock the safety pins properly once you are done. You do not want that platform falling on you fully loaded."
   ],
   "equipment": "machine",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring"
+  ]
  },
  "dbSquat": {
   "frames": [
@@ -1499,7 +2097,16 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "dumbbell",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring",
+   "lower-back"
+  ]
  },
  "bwLunge": {
   "frames": [
@@ -1513,7 +2120,15 @@ export const GUIDE = {
    "Step forward with your rear foot, repeating the lunge on the opposite leg."
   ],
   "equipment": null,
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "calves",
+   "gluteal",
+   "hamstring"
+  ]
  },
  "gluteBridge": {
   "frames": [
@@ -1526,7 +2141,14 @@ export const GUIDE = {
    "Extend as far as possible, then reverse the motion to return to the starting position."
   ],
   "equipment": "barbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "gluteal"
+  ],
+  "secondary": [
+   "calves",
+   "hamstring"
+  ]
  },
  "goodMorning": {
   "frames": [
@@ -1539,7 +2161,16 @@ export const GUIDE = {
    "Reverse the motion by extending through the hips with your glutes and hamstrings. Continue until you have returned to the starting position."
   ],
   "equipment": "barbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "hamstring"
+  ],
+  "secondary": [
+   "abs",
+   "gluteal",
+   "lower-back",
+   "obliques"
+  ]
  },
  "seatedLegCurl": {
   "frames": [
@@ -1554,7 +2185,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "hamstring"
+  ],
+  "secondary": []
  },
  "singleLegRdl": {
   "frames": [
@@ -1567,7 +2202,14 @@ export const GUIDE = {
    "Continue lowering the kettlebell until you are parallel to the ground, and then return to the upright position."
   ],
   "equipment": "kettlebells",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "hamstring"
+  ],
+  "secondary": [
+   "gluteal",
+   "lower-back"
+  ]
  },
  "kbSwing": {
   "frames": [
@@ -1576,7 +2218,16 @@ export const GUIDE = {
   ],
   "steps": [],
   "equipment": "kettlebells",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "hamstring"
+  ],
+  "secondary": [
+   "calves",
+   "deltoids",
+   "gluteal",
+   "lower-back"
+  ]
  },
  "pullThrough": {
   "frames": [
@@ -1588,7 +2239,14 @@ export const GUIDE = {
    "Begin the movement by reaching through your legs as far as possible, bending at the hips. Keep your knees slightly bent. Keeping your arms straight, extend through the hip to stand straight up. Avoid pulling upward through the shoulders; all of the motion should originate through the hips."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "gluteal"
+  ],
+  "secondary": [
+   "hamstring",
+   "lower-back"
+  ]
  },
  "sumoDl": {
   "frames": [
@@ -1602,7 +2260,19 @@ export const GUIDE = {
    "Return the weight to the ground by bending at the hips and controlling the weight on the way down."
   ],
   "equipment": "barbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "hamstring"
+  ],
+  "secondary": [
+   "adductors",
+   "forearm",
+   "gluteal",
+   "lower-back",
+   "quadriceps",
+   "trapezius",
+   "upper-back"
+  ]
  },
  "hipAbduction": {
   "frames": [
@@ -1616,7 +2286,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "gluteal"
+  ],
+  "secondary": []
  },
  "hipAdduction": {
   "frames": [
@@ -1630,7 +2304,14 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "adductors"
+  ],
+  "secondary": [
+   "gluteal",
+   "hamstring"
+  ]
  },
  "standingLegCurl": {
   "frames": [
@@ -1645,7 +2326,11 @@ export const GUIDE = {
    "Perform the same exercise now for the left leg."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "hamstring"
+  ],
+  "secondary": []
  },
  "singleGluteBridge": {
   "frames": [
@@ -1659,7 +2344,13 @@ export const GUIDE = {
    "Extend as far as possible, pause and then return to the starting position."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "gluteal"
+  ],
+  "secondary": [
+   "hamstring"
+  ]
  },
  "legPressCalf": {
   "frames": [
@@ -1674,7 +2365,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "calves"
+  ],
+  "secondary": []
  },
  "dbCalfRaise": {
   "frames": [
@@ -1688,7 +2383,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of times."
   ],
   "equipment": "dumbbell",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "calves"
+  ],
+  "secondary": []
  },
  "donkeyCalf": {
   "frames": [
@@ -1703,7 +2402,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "other",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "calves"
+  ],
+  "secondary": []
  },
  "smithCalf": {
   "frames": [
@@ -1718,7 +2421,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "machine",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "calves"
+  ],
+  "secondary": []
  },
  "abWheel": {
   "frames": [
@@ -1732,7 +2439,14 @@ export const GUIDE = {
    "After a pause at the stretched position, start pulling yourself back to the starting position as you breathe out. Tip: Go slowly and keep your abs tight at all times."
   ],
   "equipment": "other",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": [
+   "deltoids"
+  ]
  },
  "pallof": {
   "frames": [
@@ -1748,7 +2462,16 @@ export const GUIDE = {
    "At the conclusion of the set, repeat facing the other direction."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": [
+   "chest",
+   "deltoids",
+   "triceps"
+  ]
  },
  "bicycle": {
   "frames": [
@@ -1764,7 +2487,12 @@ export const GUIDE = {
    "Continue alternating in this manner until all of the recommended repetitions for each side have been completed."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": []
  },
  "mountainClimber": {
   "frames": [
@@ -1776,7 +2504,15 @@ export const GUIDE = {
    "Explosively reverse the positions of your legs, extending the bent leg until the leg is straight and supported by the toe, and bringing the other foot up with the hip and knee flexed. Repeat in an alternating fashion for 20-30 seconds."
   ],
   "equipment": null,
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "quadriceps"
+  ],
+  "secondary": [
+   "chest",
+   "deltoids",
+   "hamstring"
+  ]
  },
  "declineCrunch": {
   "frames": [
@@ -1792,7 +2528,12 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "body only",
-  "level": "intermediate"
+  "level": "intermediate",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": []
  },
  "woodchop": {
   "frames": [
@@ -1810,7 +2551,14 @@ export const GUIDE = {
    "Then, reposition and repeat the same series of movements on the opposite side."
   ],
   "equipment": "cable",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": [
+   "deltoids"
+  ]
  },
  "sidePlank": {
   "frames": [
@@ -1819,7 +2567,14 @@ export const GUIDE = {
   ],
   "steps": [],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": [
+   "deltoids"
+  ]
  },
  "crunch": {
   "frames": [
@@ -1835,6 +2590,11 @@ export const GUIDE = {
    "Repeat for the recommended amount of repetitions."
   ],
   "equipment": "body only",
-  "level": "beginner"
+  "level": "beginner",
+  "primary": [
+   "abs",
+   "obliques"
+  ],
+  "secondary": []
  }
 }

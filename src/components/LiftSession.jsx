@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { EXERCISES, FOCUSES, MUSCLES } from '../lib/program.js'
 import { buildSession, nextFocus, recommend, exerciseHistory, swapOptions, swapExercise, shuffleSession, makeExercise } from '../lib/progression.js'
@@ -6,8 +6,22 @@ import { todayStr, fmtDate } from '../lib/stats.js'
 import { Icon } from './Icons.jsx'
 import { Badge, Sheet } from './ui.jsx'
 import { ExerciseImage, ExerciseInfo } from './ExerciseVisual.jsx'
-import { buildCustom } from '../lib/builder.js'
+import { buildCustom, restSec } from '../lib/builder.js'
+import { fmtClock } from '../lib/runplans.js'
 import { warmupSets, plateMath, isBarbell } from '../lib/warmup.js'
+
+// Short double beep and a buzz when rest is over
+function restDone() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)()
+    for (let i = 0; i < 2; i++) {
+      const at = ac.currentTime + i * 0.2, o = ac.createOscillator(), g = ac.createGain()
+      o.frequency.value = 880; g.gain.setValueAtTime(0.3, at); g.gain.exponentialRampToValueAtTime(0.001, at + 0.15)
+      o.connect(g).connect(ac.destination); o.start(at); o.stop(at + 0.16)
+    }
+  } catch { /* no audio */ }
+  navigator.vibrate?.([200, 100, 200])
+}
 
 const unitOf = (ex) => (ex.kind === 'time' ? 'sec' : 'reps')
 
@@ -18,6 +32,18 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
   const [swapIdx, setSwapIdx] = useState(null)
   const [adding, setAdding] = useState(false)
   const [info, setInfo] = useState(null)
+  const [now, setNow] = useState(Date.now())
+  const [rest, setRest] = useState(null) // { end, total }
+  const beeped = useRef(false)
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 500); return () => clearInterval(t) }, [])
+  const startRest = (id) => { beeped.current = false; const sec = restSec(id); setRest({ end: Date.now() + sec * 1000, total: sec }) }
+  useEffect(() => {
+    if (!rest || beeped.current || now < rest.end) return
+    beeped.current = true
+    restDone()
+    const t = setTimeout(() => setRest((r) => (r && Date.now() - r.end > 4000 ? null : r)), 5000)
+    return () => clearTimeout(t)
+  }, [now, rest])
 
   // Start a session if there isn't one in progress. Opened from a planned day, use that day's focus and date.
   useEffect(() => {
@@ -143,6 +169,12 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
     notify('Workout saved')
   }
 
+  const doneSets = draft.exercises.reduce((t, e) => t + e.sets.filter((x) => x.done).length, 0)
+  const totalSets = draft.exercises.reduce((t, e) => t + e.sets.length, 0)
+  const volume = draft.exercises.reduce((t, e) => t + e.sets.filter((x) => x.done).reduce((a, x) => a + (Number(x.weight) || 0) * (Number(x.reps) || 0), 0), 0)
+  const elapsed = Math.max(0, Math.floor((now - draft.startedAt) / 1000))
+  const restLeft = rest ? Math.ceil((rest.end - now) / 1000) : 0
+
   return (
     <div className="stack-lg">
       <header className="top" style={{ marginBottom: 0 }}>
@@ -153,101 +185,102 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
         <button className="icon-btn" onClick={onClose} aria-label="Minimize"><Icon.X /></button>
       </header>
 
-      <div className="chips scroll-x">
-        <button className={`chip lg ${isCustom ? 'on lift' : ''}`} onClick={onBuild}><Icon.Plus />Pick muscles</button>
-        {Object.entries(FOCUSES).map(([k, f]) => (
-          <button key={k} className={`chip lg ${draft.focus === k ? 'on lift' : ''}`} onClick={() => switchFocus(k)}>{f.name}</button>
-        ))}
+      <div className="ls-stats num">
+        <div><span>Duration</span><b>{fmtClock(elapsed)}</b></div>
+        <div><span>Volume</span><b>{volume.toLocaleString()} lb</b></div>
+        <div><span>Sets</span><b>{doneSets} / {totalSets}</b></div>
       </div>
 
-      <div className="row">
-        <button className="btn grow" onClick={mixItUp}><Icon.Shuffle />Mix it up</button>
-        <button className="btn grow" onClick={() => setAdding(true)}><Icon.Plus />Add exercise</button>
+      <div className="stack" style={{ gap: 10 }}>
+        <div className="chips scroll-x">
+          <button className={`chip lg ${isCustom ? 'on lift' : ''}`} onClick={onBuild}><Icon.Plus />Pick muscles</button>
+          {Object.entries(FOCUSES).map(([k, f]) => (
+            <button key={k} className={`chip lg ${draft.focus === k ? 'on lift' : ''}`} onClick={() => switchFocus(k)}>{f.name}</button>
+          ))}
+        </div>
+        <div className="row" style={{ gap: 16 }}>
+          <button className="btn sm ghost" onClick={mixItUp}><Icon.Shuffle />Shuffle</button>
+          <button className="btn sm ghost" onClick={() => setAdding(true)}><Icon.Plus />Add exercise</button>
+        </div>
       </div>
 
       {draft.exercises.map((e, ei) => {
         const ex = EXERCISES[e.id]
         const last = exerciseHistory(e.id, lifts)[0]
+        const prev = last ? last.entry.sets : []
         const isWeight = ex.kind === 'weight'
         const isAnchor = e.slot != null && FOCUSES[draft.focus]?.slots[e.slot]?.anchor
+        const allDone = e.sets.length > 0 && e.sets.every((x) => x.done)
+        const wu = warmupSets(e.id, e.sets[0]?.weight || e.rec.weight)
+        const bb = isBarbell(e.id)
         return (
-          <div className="card exercise" key={e.id + ei}>
-            <div className="row between" style={{ alignItems: 'flex-start', gap: 14 }}>
+          <div className={`card exercise ${allDone ? 'complete' : ''}`} key={e.id + ei}>
+            <div className="ex-head">
               <button className="ex-thumb" onClick={() => setInfo(e.id)} aria-label={`How to do ${ex.name}`}>
-                <ExerciseImage id={e.id} size={76} />
-                <span>How to</span>
+                <ExerciseImage id={e.id} size={56} />
               </button>
               <div className="grow">
-                <div className="row" style={{ gap: 6 }}>
-                  <span className="pill">{ex.muscle}</span>
-                  {isAnchor && <span className="pill copper">Main lift</span>}
-                </div>
-                <h2 style={{ marginTop: 6 }}>{ex.name}</h2>
-                <p className="muted small" style={{ marginTop: 2 }}>{ex.sets} × {ex.reps[0]}–{ex.reps[1]} {unitOf(ex)} · {ex.cue}</p>
+                <h3 className="ex-name">{ex.name}</h3>
+                <p className="muted small">{ex.muscle} · {ex.sets} × {ex.reps[0]}–{ex.reps[1]}{ex.kind === 'time' ? 's' : ''}{isAnchor ? <span className="ex-main"> · Main lift</span> : null}</p>
               </div>
-              <div className="row" style={{ gap: 6 }}>
-                <button className="icon-btn" onClick={() => setSwapIdx(ei)} aria-label="Swap exercise"><Icon.Swap /></button>
-              </div>
+              <button className="icon-btn" onClick={() => setSwapIdx(ei)} aria-label="Swap exercise"><Icon.Swap /></button>
             </div>
 
-            <div className="rec">
+            <div className="ex-target">
               <Badge kind={e.rec.kind} />
-              <div>
-                <b className="num">{isWeight ? `${e.rec.weight} lb × ${e.rec.reps}` : `${e.rec.reps} ${unitOf(ex)}`}</b>
-                <div className="muted">{e.rec.note}</div>
-                {last && (
-                  <div className="muted tiny" style={{ marginTop: 4 }}>
-                    Last ({fmtDate(last.date)}): {last.entry.sets.map((s) => (isWeight ? `${s.weight}×${s.reps}` : s.reps)).join(', ')}
-                  </div>
-                )}
-              </div>
+              <b className="num">{isWeight ? `${e.rec.weight} lb × ${e.rec.reps}` : `${e.rec.reps} ${unitOf(ex)}`}</b>
+              <span className="muted small grow">{e.rec.note}</span>
             </div>
 
-            {(() => {
-              const wu = warmupSets(e.id, e.sets[0]?.weight || e.rec.weight)
-              if (!wu.length) return null
-              const bb = isBarbell(e.id)
-              return (
-                <div className="warmup">
-                  <p className="warmup-label">Warm-up <span className="muted">· not logged</span></p>
-                  <div className="warmup-sets">
-                    {wu.map((w, wi) => {
-                      const done = (e.warmDone || []).includes(wi)
-                      return (
-                        <button key={wi} className={`warm ${done ? 'on' : ''}`} onClick={() => toggleWarm(ei, wi)}>
-                          <b className="num">{w.weight} × {w.reps}</b>
-                          <span>{bb ? plateMath(w.weight) : ex.cue.startsWith('Weight per hand') ? 'per hand' : 'lighter'}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
+            {wu.length > 0 && (
+              <div className="warmup">
+                <p className="warmup-label">Warm-up <span className="muted">· not logged</span></p>
+                <div className="warmup-sets">
+                  {wu.map((w, wi) => {
+                    const done = (e.warmDone || []).includes(wi)
+                    return (
+                      <button key={wi} className={`warm ${done ? 'on' : ''}`} onClick={() => toggleWarm(ei, wi)}>
+                        <b className="num">{w.weight} × {w.reps}</b>
+                        <span>{bb ? plateMath(w.weight) : ex.cue.startsWith('Weight per hand') ? 'per hand' : 'lighter'}</span>
+                      </button>
+                    )
+                  })}
                 </div>
-              )
-            })()}
+              </div>
+            )}
 
-            <div className="sets">
+            <div className={`sets ${isWeight ? '' : 'bw'}`}>
               <div className="set-row head">
-                <span className="center">Set</span>
-                <span className="center">{isWeight ? 'Weight (lb)' : ''}</span>
-                <span className="center">{ex.kind === 'time' ? 'Seconds' : 'Reps'}</span>
+                <span>Set</span>
+                <span>Previous</span>
+                {isWeight && <span className="center">lb</span>}
+                <span className="center">{ex.kind === 'time' ? 'Sec' : 'Reps'}</span>
                 <span />
               </div>
-              {e.sets.map((s, si) => (
-                <div className="set-row" key={si}>
-                  <span className="n">{si + 1}</span>
-                  {isWeight ? (
-                    <input className="input" inputMode="decimal" value={s.weight} aria-label={`Set ${si + 1} weight`}
-                      onChange={(ev) => setField(ei, si, { weight: ev.target.value.replace(/[^\d.]/g, '') })} />
-                  ) : <span className="muted small center">Bodyweight</span>}
-                  <input className="input" inputMode="numeric" placeholder={String(e.rec.reps)} value={s.reps} aria-label={`Set ${si + 1} reps`}
-                    onChange={(ev) => setField(ei, si, { reps: ev.target.value.replace(/\D/g, '') })} />
-                  <button className={`set-done ${s.done ? 'on' : ''}`} onClick={() => toggleDone(ei, si)} aria-label="Mark set done">
-                    <Icon.Check />
-                  </button>
-                </div>
-              ))}
+              {e.sets.map((x, si) => {
+                const p = prev[si]
+                return (
+                  <div className={`set-row ${x.done ? 'done' : ''}`} key={si}>
+                    <span className="n">{si + 1}</span>
+                    <button className="prev num" disabled={!p} onClick={() => p && setField(ei, si, isWeight ? { weight: p.weight, reps: p.reps } : { reps: p.reps })} aria-label="Use previous">
+                      {p ? (isWeight ? `${p.weight} × ${p.reps}` : `${p.reps}${ex.kind === 'time' ? 's' : ''}`) : '—'}
+                    </button>
+                    {isWeight && (
+                      <input className="input" inputMode="decimal" value={x.weight} aria-label={`Set ${si + 1} weight`}
+                        onChange={(ev) => setField(ei, si, { weight: ev.target.value.replace(/[^\d.]/g, '') })} />
+                    )}
+                    <input className="input" inputMode="numeric" placeholder={String(e.rec.reps)} value={x.reps} aria-label={`Set ${si + 1} reps`}
+                      onChange={(ev) => setField(ei, si, { reps: ev.target.value.replace(/\D/g, '') })} />
+                    <button className={`set-done ${x.done ? 'on' : ''}`} onClick={() => { if (!x.done) startRest(e.id); toggleDone(ei, si) }} aria-label="Mark set done">
+                      <Icon.Check />
+                    </button>
+                  </div>
+                )
+              })}
+              <button className="add-set" onClick={() => addSet(ei)}><Icon.Plus />Add set</button>
             </div>
-            {e.sets.some((s) => s.done) && (
+
+            {e.sets.some((x) => x.done) && (
               <div className="effort">
                 <span className="small muted">How hard was that?</span>
                 <div className="effort-btns">
@@ -257,15 +290,31 @@ export default function LiftSession({ onClose, notify, onBuild, initialFocus = n
                 </div>
               </div>
             )}
-            <div className="row between" style={{ marginTop: 10 }}>
-              <button className="btn sm ghost" onClick={() => addSet(ei)}><Icon.Plus />Set</button>
-              <button className="btn sm ghost" onClick={() => removeExercise(ei)}><Icon.Trash />Remove</button>
+            <div className="ex-foot">
+              <button className="btn sm ghost" onClick={() => setInfo(e.id)}>How to</button>
+              <button className="btn sm ghost muted-btn" onClick={() => removeExercise(ei)}><Icon.Trash />Remove</button>
             </div>
           </div>
         )
       })}
 
       <div className="sticky-bar">
+        {rest && (
+          <div className={`rest ${restLeft <= 0 ? 'over' : ''}`}>
+            <div className="rest-bar"><span style={{ width: `${Math.max(0, Math.min(100, (restLeft / rest.total) * 100))}%` }} /></div>
+            <div className="rest-row">
+              <div>
+                <p className="tiny muted">{restLeft > 0 ? 'Rest' : 'Rest over'}</p>
+                <b className="num rest-clock">{restLeft > 0 ? fmtClock(restLeft) : 'Next set'}</b>
+              </div>
+              <div className="row" style={{ gap: 6 }}>
+                <button className="btn sm" onClick={() => setRest((r) => ({ ...r, end: r.end - 15000, total: Math.max(15, r.total - 15) }))}>−15</button>
+                <button className="btn sm" onClick={() => setRest((r) => ({ ...r, end: Math.max(r.end, Date.now()) + 15000, total: r.total + 15 }))}>+15</button>
+                <button className="btn sm" onClick={() => setRest(null)}>{restLeft > 0 ? 'Skip' : 'Close'}</button>
+              </div>
+            </div>
+          </div>
+        )}
         <div>
           <button className="btn danger" onClick={discard} aria-label="Discard workout"><Icon.Trash /></button>
           <button className="btn primary grow" onClick={finish}><Icon.Check />Finish workout</button>

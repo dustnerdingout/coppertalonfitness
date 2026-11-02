@@ -415,6 +415,74 @@ select.input { padding-right: 32px; }
 .effort-btn.good.on { background: var(--run); }
 .effort-btn.grind.on { background: var(--warn); }
 
+/* ---------- Today's workout card ---------- */
+.workout-hero { padding: 20px; }
+.wh-top { display: flex; gap: 12px; align-items: flex-start; }
+.wh-title { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; margin: 2px 0 4px; }
+.wh-map { width: 104px; flex: none; margin-top: -4px; }
+.wh-map .bodymap { width: 100%; display: block; }
+.wh-list { margin: 14px 0 16px; display: flex; flex-direction: column; }
+.wh-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
+.wh-row:last-child { border-bottom: 0; }
+.wh-row .ex-img { border-radius: 10px; }
+.wh-name { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+
+/* ---------- Recovery card ---------- */
+.recovery { display: flex; gap: 14px; align-items: center; }
+.rc-map { width: 112px; flex: none; }
+.rc-map .bodymap { width: 100%; display: block; }
+.rc-list { display: flex; flex-direction: column; gap: 7px; }
+.rc-item { display: grid; grid-template-columns: 1fr 64px 32px; gap: 8px; align-items: center; }
+.rc-item .bar { height: 5px; }
+.rc-item .bar > span { background: var(--good); }
+
+/* ---------- Logger ---------- */
+.ls-stats {
+  position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, 1fr);
+  margin: -8px -16px -12px; padding: 10px 16px;
+  background: color-mix(in srgb, var(--bg) 84%, transparent); backdrop-filter: saturate(180%) blur(18px); -webkit-backdrop-filter: saturate(180%) blur(18px);
+}
+.ls-stats > div { display: flex; flex-direction: column; }
+.ls-stats span { font-size: 12px; color: var(--muted); font-weight: 500; }
+.ls-stats b { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+.exercise { padding: 16px; }
+.exercise.complete .ex-name::after { content: ' ✓'; color: var(--good); }
+.ex-head { display: flex; align-items: center; gap: 12px; }
+.ex-head .ex-thumb .ex-img { border-radius: 12px; }
+.ex-name { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.25; }
+.ex-main { color: var(--copper); font-weight: 600; }
+.ex-target { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0 14px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+.ex-target .badge { background: var(--surface); }
+.ex-target .muted { flex-basis: 100%; line-height: 1.35; }
+.sets { gap: 4px; }
+.set-row { grid-template-columns: 26px 1.15fr 1fr 1fr 40px; gap: 6px; padding: 3px 4px; border-radius: 10px; transition: background 0.2s ease; }
+.sets.bw .set-row { grid-template-columns: 26px 1.15fr 1fr 40px; }
+.set-row.head { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding-bottom: 0; }
+.set-row.done { background: color-mix(in srgb, var(--good) 12%, transparent); }
+.set-row.done .input { background: transparent; }
+.set-row .input { height: 40px; font-size: 17px; font-weight: 600; }
+.set-done { width: 40px; height: 40px; border-radius: 10px; }
+.prev { border: 0; background: none; padding: 0; text-align: left; color: var(--muted); font-size: 14px; cursor: pointer; white-space: nowrap; }
+.prev:disabled { cursor: default; }
+.add-set {
+  margin-top: 6px; height: 38px; border-radius: 10px; border: 0; background: var(--surface-2); color: var(--ink-2);
+  font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+}
+.add-set svg { width: 15px; height: 15px; }
+.ex-foot { display: flex; justify-content: space-between; margin-top: 8px; }
+.muted-btn { color: var(--muted) !important; }
+
+/* Rest timer */
+.rest { max-width: 600px; margin: 0 auto 10px; background: var(--surface); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 18px rgba(0,0,0,0.12); }
+.rest-bar { height: 4px; background: var(--surface-2); }
+.rest-bar span { display: block; height: 100%; background: var(--run); transition: width 0.5s linear; }
+.rest-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 10px 16px; }
+.rest-clock { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.rest.over .rest-bar span { background: var(--good); }
+.rest.over .rest-clock { color: var(--good); }
+.sticky-bar { flex-direction: column; }
+.sticky-bar > div:last-child { display: flex; }
+
 /* ---------- Food ---------- */
 .macro { display: flex; flex-direction: column; gap: 6px; }
 .macro .row { font-size: 14px; }
@@ -672,3 +740,9 @@ button.up-link:active { background: var(--surface-2) !important; }
   h1 { font-size: 30px; }
 }
 .chip svg { width: 15px; height: 15px; }
+.sticky-bar > .rest { display: block; width: 100%; }
+
+/* Anatomy thumbnails */
+.ex-img.anat { background: var(--bm-bg); border-radius: 12px; overflow: hidden; }
+.ex-img.anat .bodymap { width: 100%; height: 100%; display: block; background: none; }
+:root[data-theme='dark'] .ex-img.anat { filter: none; }

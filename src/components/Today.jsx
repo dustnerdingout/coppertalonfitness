@@ -10,6 +10,75 @@ import { computeTargets, dayTotals } from '../lib/nutrition.js'
 import { planFor, datesBetween, addDays, slotsFor, isOverridden } from '../lib/plan.js'
 import { workoutSummary, planProgress } from '../lib/runplans.js'
 import { parseDate } from '../lib/stats.js'
+import { EXERCISES } from '../lib/program.js'
+import { buildSession } from '../lib/progression.js'
+import { sessionMinutes } from '../lib/builder.js'
+import { recovery } from '../lib/recovery.js'
+import BodyMap from './BodyMap.jsx'
+
+// Today's lift as a full preview: every exercise with its target, time estimate, and the muscles it hits
+function WorkoutHero({ session, title, resume, onStart, onMove, onChange }) {
+  const muscles = [...new Set(session.exercises.map((e) => EXERCISES[e.id]?.muscle).filter(Boolean))]
+  const doneSets = session.exercises.reduce((t, e) => t + e.sets.filter((s) => s.done).length, 0)
+  return (
+    <div className="card workout-hero">
+      <div className="wh-top">
+        <div className="grow">
+          <p className="eyebrow" style={{ color: 'var(--copper)' }}>{resume ? 'In progress' : "Today's workout"}</p>
+          <h2 className="wh-title">{title}</h2>
+          <p className="muted small">{session.exercises.length} exercises · about {sessionMinutes(session.exercises)} min{resume ? ` · ${doneSets} sets done` : ''}</p>
+        </div>
+        <div className="wh-map"><BodyMap muscles={muscles} /></div>
+      </div>
+      <div className="wh-list">
+        {session.exercises.map((e) => {
+          const ex = EXERCISES[e.id]
+          return (
+            <div key={e.id} className="wh-row">
+              <ExerciseImage id={e.id} size={44} still />
+              <div className="grow">
+                <p className="wh-name">{ex.name}</p>
+                <p className="muted tiny num">{e.sets.length} × {ex.reps[0]}–{ex.reps[1]}{ex.kind === 'weight' ? ` · ${e.rec.weight} lb` : ex.kind === 'time' ? ' sec' : ' reps'}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <button className="btn primary block" onClick={onStart}>{resume ? 'Resume workout' : 'Start workout'}</button>
+      <div className="row between" style={{ marginTop: 8 }}>
+        <button className="btn sm ghost" onClick={onChange}>Pick different muscles</button>
+        {onMove && <button className="btn sm ghost" onClick={onMove}><Icon.Move />Move</button>}
+      </div>
+    </div>
+  )
+}
+
+function RecoveryCard({ lifts }) {
+  const rec = recovery(lifts)
+  const fatigue = Object.fromEntries(Object.entries(rec).map(([m, v]) => [m, 1 - v]))
+  const tired = Object.entries(rec).filter(([, v]) => v < 0.95).sort((a, b) => a[1] - b[1])
+  const fresh = Object.entries(rec).filter(([, v]) => v >= 0.95).map(([m]) => m)
+  return (
+    <div className="card recovery">
+      <div className="rc-map"><BodyMap heat={fatigue} /></div>
+      <div className="grow stack" style={{ gap: 8 }}>
+        <h3>Muscle recovery</h3>
+        {tired.length ? (
+          <div className="rc-list">
+            {tired.slice(0, 4).map(([m, v]) => (
+              <div key={m} className="rc-item">
+                <span className="small">{m.replace('Hamstrings & Glutes', 'Hams & Glutes')}</span>
+                <div className="bar light"><span style={{ width: `${Math.round(v * 100)}%` }} /></div>
+                <span className="tiny muted num">{Math.round(v * 100)}%</span>
+              </div>
+            ))}
+          </div>
+        ) : <p className="muted small">Everything is fresh. Go train anything.</p>}
+        {tired.length > 0 && fresh.length > 0 && <p className="muted tiny">Fresh: {fresh.slice(0, 4).join(', ').replace('Hamstrings & Glutes', 'Hams & Glutes')}</p>}
+      </div>
+    </div>
+  )
+}
 
 const slotIcon = { lift: Icon.Dumbbell, run: Icon.Run, mobility: Icon.Stretch, rest: Icon.Bed }
 
@@ -55,6 +124,15 @@ export default function Today({ open, toggleTheme, dark, goTab, goDay, notify })
   const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
   const renderSlot = (slot) => {
+    if (slot === 'lift' && (draft || !didLift(today))) {
+      const session = draft || buildSession(nextKey, lifts)
+      const f = FOCUSES[nextKey]
+      return (
+        <WorkoutHero key="lift" session={session} title={f ? f.name : draft?.title || 'Workout'} resume={!!draft}
+          onStart={() => open({ type: 'lift' })} onChange={() => open({ type: 'build' })}
+          onMove={draft ? null : () => setMoving({ slot: 'lift', label: f ? f.name : 'Strength' })} />
+      )
+    }
     const tone = SLOTS[slot].tone
     const I = slotIcon[tone]
     let title, sub, done, onClick
@@ -169,6 +247,8 @@ export default function Today({ open, toggleTheme, dark, goTab, goDay, notify })
       </section>
       {moving && <MoveSheet date={today} slot={moving.slot} label={moving.label} notify={notify} onClose={() => setMoving(null)} />}
       {editing && <DaySheet date={today} onClose={() => setEditing(false)} />}
+
+      <RecoveryCard lifts={lifts} />
 
       <button className="build-card" onClick={() => open({ type: 'build' })}>
         <div className="build-imgs">

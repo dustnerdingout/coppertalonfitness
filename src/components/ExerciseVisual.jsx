@@ -1,26 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { GUIDE } from '../lib/guide.js'
 import { EXERCISES, COMPOUND } from '../lib/program.js'
 import { restSec, fmtRest } from '../lib/builder.js'
 import { Sheet } from './ui.jsx'
-import BodyMap from './BodyMap.jsx'
+import { AnatomyZoom, ExerciseBody, REGIONS, SIDE } from './BodyMap.jsx'
 
 const src = (f) => `${import.meta.env.BASE_URL}exercises/${f}`
 
-// Start and end positions, crossfading so you can see the movement
-export function ExerciseImage({ id, size = 72, still = false, className = '' }) {
+// Exercise thumbnail: the muscles it works, drawn as anatomy (main muscles solid, helpers lighter)
+export function ExerciseImage({ id, size = 72, className = '' }) {
   const g = GUIDE[id]
-  const [frame, setFrame] = useState(0)
-  useEffect(() => {
-    if (still || !g || g.frames.length < 2) return
-    const t = setInterval(() => setFrame((f) => 1 - f), 1200)
-    return () => clearInterval(t)
-  }, [still, g])
-  if (!g) return <div className={`ex-img ${className}`} style={{ width: size, height: size }} />
+  const fallback = REGIONS[EXERCISES[id]?.muscle] || []
   return (
-    <div className={`ex-img ${className}`} style={size === 'full' ? undefined : { width: size, height: size }}>
+    <div className={`ex-img anat ${className}`} style={size === 'full' ? undefined : { width: size, height: size }}>
+      <AnatomyZoom primary={g?.primary?.length ? g.primary : fallback} secondary={g?.secondary || []} fallbackSide={SIDE[EXERCISES[id]?.muscle] || 'front'} />
+    </div>
+  )
+}
+
+// Demo photos, start and end position (only shown when asked for in How to)
+function DemoPhotos({ id, name }) {
+  const g = GUIDE[id]
+  if (!g?.frames?.length) return null
+  return (
+    <div className="ex-frames">
       {g.frames.map((f, i) => (
-        <img key={f} src={src(f)} alt="" loading="lazy" style={{ opacity: i === frame ? 1 : 0 }} />
+        <figure key={f}>
+          <img src={src(f)} alt={`${name} ${i ? 'end' : 'start'} position`} loading="lazy" />
+          <figcaption>{i ? 'End' : 'Start'}</figcaption>
+        </figure>
       ))}
     </div>
   )
@@ -30,26 +38,24 @@ export function ExerciseImage({ id, size = 72, still = false, className = '' }) 
 export function ExerciseInfo({ id, onClose }) {
   const ex = EXERCISES[id]
   const g = GUIDE[id]
+  const [photos, setPhotos] = useState(false)
+  const primary = g?.primary?.length ? g.primary : REGIONS[ex.muscle] || []
   return (
     <Sheet title={ex.name} onClose={onClose}>
       <div className="stack">
-        {g && (
-          <div className="ex-frames">
-            {g.frames.map((f, i) => (
-              <figure key={f}>
-                <img src={src(f)} alt={`${ex.name} ${i ? 'end' : 'start'} position`} />
-                <figcaption>{i ? 'End' : 'Start'}</figcaption>
-              </figure>
-            ))}
+        <div className="card target-card">
+          <ExerciseBody primary={primary} secondary={g?.secondary || []} labels />
+          <div className="legend" style={{ justifyContent: 'center', marginTop: 4 }}>
+            <span><i className="dotkey" style={{ background: 'var(--bm-hot-1)' }} />Main muscles</span>
+            {g?.secondary?.length > 0 && <span><i className="dotkey" style={{ background: 'var(--bm-hot-1)', opacity: 0.38 }} />Also working</span>}
           </div>
-        )}
+        </div>
         <div className="row wrap" style={{ gap: 6 }}>
           <span className="pill">{ex.muscle}</span>
           <span className="pill">{ex.sets} × {ex.reps[0]}–{ex.reps[1]}{ex.kind === 'time' ? ' sec' : ''}</span>
           <span className="pill">Rest {fmtRest(restSec(id))}</span>
           {COMPOUND.has(id) && <span className="pill copper">Compound</span>}
         </div>
-        <div className="card target-card small-map"><BodyMap muscles={[ex.muscle]} labels /></div>
         <p className="small"><b>Cue:</b> {ex.cue}</p>
         {g && (
           <div className="card">
@@ -59,7 +65,10 @@ export function ExerciseInfo({ id, onClose }) {
             </ol>
           </div>
         )}
-        <p className="muted tiny center">Photos and instructions: Free Exercise DB (public domain)</p>
+        {g?.frames?.length > 0 && (
+          photos ? <DemoPhotos id={id} name={ex.name} /> : <button className="btn sm ghost" style={{ alignSelf: 'center' }} onClick={() => setPhotos(true)}>Show demo photos</button>
+        )}
+        <p className="muted tiny center">Instructions and muscle data: Free Exercise DB (public domain)</p>
       </div>
     </Sheet>
   )

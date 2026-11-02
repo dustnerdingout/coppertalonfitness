@@ -26,14 +26,14 @@ const BACK_SHIFT = -724 + 760 // back art lives at x 724..1448; place it beside 
 
 const cls = (region, lit) => (HAIR.has(region) ? 'bm-hair' : SKIN.has(region) ? 'bm-skin' : lit.has(region) ? 'bm-on' : 'bm-off')
 
-function Figure({ side, lit, shift = 0, gradId }) {
+function Figure({ side, lit, shift = 0, gradId, levels = null, crop = null }) {
   return (
     <g transform={shift ? `translate(${shift} 0)` : undefined}>
       <path d={OUTLINE[side]} className="bm-silhouette" />
       {BODY[side].map(([region, paths]) =>
         paths.map((d, j) => (
-          <path key={region + j} d={d} className={cls(region, lit)} data-lit={lit.has(region) || undefined}
-            style={lit.has(region) ? { fill: `url(#${gradId})` } : undefined} />
+          <path key={region + j} d={d} className={cls(region, lit)} data-lit={(crop ? crop.has(region) : lit.has(region)) || undefined}
+            style={lit.has(region) ? { fill: `url(#${gradId})`, ...(levels ? { fillOpacity: levels[region] } : {}) } : undefined} />
         ))
       )}
       <path d={OUTLINE[side]} className="bm-outline" />
@@ -53,14 +53,16 @@ function Defs({ id }) {
 }
 
 /** Front and back figures with the chosen muscle groups highlighted */
-export default function BodyMap({ muscles = [], labels = false }) {
+export default function BodyMap({ muscles = [], labels = false, heat = null }) {
   const gradId = 'bmg' + useId().replace(/:/g, '')
-  const lit = new Set(muscles.flatMap((m) => REGIONS[m] || []))
+  // heat: { muscleGroup: 0..1 } shades each group by intensity instead of on/off
+  const levels = heat ? Object.fromEntries(Object.entries(heat).flatMap(([m, v]) => (REGIONS[m] || []).map((r) => [r, v]))) : null
+  const lit = heat ? new Set(Object.keys(levels).filter((r) => levels[r] > 0.04)) : new Set(muscles.flatMap((m) => REGIONS[m] || []))
   return (
     <svg className="bodymap" viewBox={`20 40 1450 ${labels ? 1390 : 1330}`} role="img" aria-label={`Muscles: ${muscles.join(', ') || 'none'}`}>
       <Defs id={gradId} />
-      <Figure side="front" lit={lit} gradId={gradId} />
-      <Figure side="back" lit={lit} shift={BACK_SHIFT} gradId={gradId} />
+      <Figure side="front" lit={lit} gradId={gradId} levels={levels} />
+      <Figure side="back" lit={lit} shift={BACK_SHIFT} gradId={gradId} levels={levels} />
       {labels && (
         <>
           <text x="364" y="1405" textAnchor="middle" className="bm-label">Front</text>
@@ -71,15 +73,23 @@ export default function BodyMap({ muscles = [], labels = false }) {
   )
 }
 
-/** Zoomed single side view, cropped around the highlighted muscle like an anatomy plate */
-export function MuscleZoom({ muscle }) {
+const FRONT_ONLY = new Set(['chest', 'abs', 'obliques', 'biceps', 'quadriceps', 'tibialis'])
+const BACK_ONLY = new Set(['upper-back', 'lower-back', 'gluteal', 'hamstring'])
+
+/**
+ * Zoomed single side anatomy, cropped around the main muscles like an anatomy plate.
+ * primary regions are solid copper, secondary regions are a lighter tint.
+ */
+export function AnatomyZoom({ primary = [], secondary = [], side: forced, fallbackSide = 'front' }) {
   const gradId = 'bmz' + useId().replace(/:/g, '')
-  const side = SIDE[muscle] || 'front'
-  const lit = new Set(REGIONS[muscle] || [])
+  const pri = new Set(primary)
+  const side = forced || (primary.some((r) => BACK_ONLY.has(r)) ? 'back' : primary.some((r) => FRONT_ONLY.has(r)) ? 'front' : fallbackSide)
+  const lit = new Set([...primary, ...secondary])
+  const levels = Object.fromEntries([...secondary.map((r) => [r, 0.38]), ...primary.map((r) => [r, 1])])
   const ref = useRef(null)
   const [box, setBox] = useState(side === 'front' ? '0 0 724 1448' : '724 0 724 1448')
 
-  // Measure the highlighted shapes and frame them in a square
+  // Measure the main muscles and frame them in a square
   useLayoutEffect(() => {
     const els = ref.current?.querySelectorAll('[data-lit]')
     if (!els?.length) return
@@ -92,12 +102,37 @@ export function MuscleZoom({ muscle }) {
     const size = Math.max(x1 - x0, y1 - y0) * 1.32 + 40
     const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2
     setBox(`${Math.round(cx - size / 2)} ${Math.round(cy - size / 2)} ${Math.round(size)} ${Math.round(size)}`)
-  }, [muscle])
+  }, [primary.join(), side])
 
   return (
-    <svg ref={ref} className="bodymap zoom" viewBox={box} role="img" aria-label={muscle}>
+    <svg ref={ref} className="bodymap zoom" viewBox={box} role="img" aria-hidden="true">
       <Defs id={gradId} />
-      <Figure side={side} lit={lit} gradId={gradId} />
+      <Figure side={side} lit={lit} gradId={gradId} levels={levels} crop={pri} />
+    </svg>
+  )
+}
+
+/** Zoomed view of one muscle group (builder tiles) */
+export function MuscleZoom({ muscle }) {
+  return <AnatomyZoom primary={REGIONS[muscle] || []} side={SIDE[muscle] || 'front'} />
+}
+
+/** Front and back figures for one exercise: main muscles solid, helpers lighter */
+export function ExerciseBody({ primary = [], secondary = [], labels = false }) {
+  const gradId = 'bme' + useId().replace(/:/g, '')
+  const lit = new Set([...primary, ...secondary])
+  const levels = Object.fromEntries([...secondary.map((r) => [r, 0.38]), ...primary.map((r) => [r, 1])])
+  return (
+    <svg className="bodymap" viewBox={`20 40 1450 ${labels ? 1390 : 1330}`} role="img" aria-label="Muscles worked">
+      <Defs id={gradId} />
+      <Figure side="front" lit={lit} gradId={gradId} levels={levels} />
+      <Figure side="back" lit={lit} shift={BACK_SHIFT} gradId={gradId} levels={levels} />
+      {labels && (
+        <>
+          <text x="364" y="1405" textAnchor="middle" className="bm-label">Front</text>
+          <text x="1124" y="1405" textAnchor="middle" className="bm-label">Back</text>
+        </>
+      )}
     </svg>
   )
 }
