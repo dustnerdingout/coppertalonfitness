@@ -56,6 +56,7 @@ function DayView({ date, setDate, open, notify }) {
   const start = (p) => {
     if (!isToday) return
     if (p.tone === 'lift') open({ type: 'lift' })
+    else if (p.tone === 'run' && p.workout) open({ type: 'runworkout', planId: state.runPlan.id, workoutId: p.workout.id })
     else if (p.tone === 'run') open({ type: 'run', runType: p.slot.slice(4) })
     else if (p.tone === 'mobility') open({ type: 'mobility' })
   }

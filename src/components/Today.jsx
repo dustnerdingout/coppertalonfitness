@@ -8,6 +8,7 @@ import { todayStr, weightSummary, DAY } from '../lib/stats.js'
 import { Icon } from './Icons.jsx'
 import { computeTargets, dayTotals } from '../lib/nutrition.js'
 import { planFor, datesBetween, addDays, slotsFor, isOverridden } from '../lib/plan.js'
+import { workoutSummary, planProgress } from '../lib/runplans.js'
 import { parseDate } from '../lib/stats.js'
 
 const slotIcon = { lift: Icon.Dumbbell, run: Icon.Run, mobility: Icon.Stretch, rest: Icon.Bed }
@@ -27,6 +28,8 @@ export default function Today({ open, toggleTheme, dark, goTab, notify }) {
   const today = todayStr()
   const dow = new Date().getDay()
   const todaySlots = slotsFor(state, today)
+  const todayPlan = planFor(state, [today])[today]
+  const planName = planProgress(state)?.plan.name
   const ws = weightSummary(profile, weights)
   const targets = computeTargets(profile, ws.current)
   const eaten = dayTotals(state.meals, today)
@@ -56,11 +59,19 @@ export default function Today({ open, toggleTheme, dark, goTab, notify }) {
       onClick = () => open({ type: 'lift' })
     } else if (slot.startsWith('run-')) {
       const type = slot.slice(4)
-      const rec = runRecommendation(type, runs)
-      title = RUN_TYPES[type].name
-      sub = type === 'intervals' ? `${intervalLabel(rec)} · ~${intervalMinutes(rec)} min` : `${rec.minutes} min target`
-      done = didRun(today, type)
-      onClick = () => open({ type: 'run', runType: type })
+      const pw = todayPlan.find((p) => p.slot === slot)?.workout
+      if (pw) {
+        title = pw.name
+        sub = `${planName} · Week ${pw.week} · ${workoutSummary(pw)}`
+        done = false
+        onClick = () => open({ type: 'runworkout', planId: state.runPlan.id, workoutId: pw.id })
+      } else {
+        const rec = runRecommendation(type, runs)
+        title = RUN_TYPES[type].name
+        sub = type === 'intervals' ? `${intervalLabel(rec)} · ~${intervalMinutes(rec)} min` : `${rec.minutes} min target`
+        done = didRun(today, type) || (!!state.runPlan && didRun(today))
+        onClick = () => open({ type: 'run', runType: type })
+      }
     } else if (slot === 'mobility') {
       title = 'Mobility'
       sub = 'Active recovery · about 20 min'

@@ -1,5 +1,6 @@
 import { SLOTS, FOCUSES, ROTATIONS, RUN_TYPES } from './program.js'
 import { todayStr, parseDate, DAY } from './stats.js'
+import { planProgress } from './runplans.js'
 
 // ---------- Per-day changes ----------
 // The weekly schedule in Settings is the template. `overrides` holds one-off changes
@@ -54,6 +55,16 @@ export function planFor(state, dates) {
   const order = (ROTATIONS[rotation] || ROTATIONS.ppl).order
   const hasLiftSlot = (ds) => slotsFor(state, ds).includes('lift')
   const liftOn = (ds) => lifts.find((x) => x.date === ds)
+  const pp = planProgress(state)
+  const runSlots = (ds) => slotsFor(state, ds).filter((x) => x.startsWith('run-'))
+  // Which plan workout a future run slot gets: count pending run slots from today up to it
+  const projectedWorkout = (d, slot) => {
+    if (!pp) return null
+    let k = 0
+    for (let c = today; c < d; c = addDays(c, 1)) if (!runs.some((r) => r.date === c)) k += runSlots(c).length
+    k += runSlots(d).indexOf(slot)
+    return pp.remaining[k] || null
+  }
 
   // Which focus a future lift day gets: count pending lift days from today up to it
   const projectedFocus = (d) => {
@@ -70,6 +81,7 @@ export function planFor(state, dates) {
       let done = false
       let focus = null
       let customTitle = null
+      let workout = null
       if (tone === 'lift') {
         const l = liftOn(d)
         done = !!l
@@ -77,11 +89,12 @@ export function planFor(state, dates) {
         else if (d >= today) focus = projectedFocus(d)
       } else if (tone === 'run') {
         done = runs.some((r) => r.date === d)
+        if (!done && d >= today) workout = projectedWorkout(d, slot)
       } else if (tone === 'mobility') {
         done = mobility.some((m) => m.date === d)
       }
-      const label = tone === 'lift' && focus ? (FOCUSES[focus]?.name || customTitle || 'Strength') : tone === 'run' ? RUN_TYPES[slot.slice(4)].name : SLOTS[slot].label
-      return { slot, tone, label, done, focus, missed: !done && tone !== 'rest' && d < today }
+      const label = tone === 'lift' && focus ? (FOCUSES[focus]?.name || customTitle || 'Strength') : tone === 'run' ? (workout ? workout.name : RUN_TYPES[slot.slice(4)].name) : SLOTS[slot].label
+      return { slot, tone, label, done, focus, workout, missed: !done && tone !== 'rest' && d < today }
     })
   }
   return out

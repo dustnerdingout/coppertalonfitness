@@ -5,16 +5,18 @@ import { runRecommendation, intervalLabel, intervalMinutes, formatPace } from '.
 import { todayStr } from '../lib/stats.js'
 import { Icon } from './Icons.jsx'
 import { Badge, Seg, Sheet } from './ui.jsx'
+import { findWorkout, workoutSummary, RUN_PLANS } from '../lib/runplans.js'
 
-export function RunSheet({ initialType = 'easy', onClose, notify }) {
+export function RunSheet({ initialType = 'easy', planRef = null, initialMinutes = '', onClose, notify }) {
   const { state, add } = useStore()
-  const [type, setType] = useState(initialType)
+  const pw = planRef ? findWorkout(planRef.planId, planRef.workoutId) : null
+  const [type, setType] = useState(pw ? pw.type : initialType)
   const rec = runRecommendation(type, state.runs)
-  const target = type === 'intervals' ? intervalMinutes(rec) : rec.minutes
+  const target = pw ? (pw.minutes || initialMinutes || 30) : type === 'intervals' ? intervalMinutes(rec) : rec.minutes
 
   const [date, setDate] = useState(todayStr())
-  const [minutes, setMinutes] = useState('')
-  const [distance, setDistance] = useState('')
+  const [minutes, setMinutes] = useState(initialMinutes ? String(initialMinutes) : '')
+  const [distance, setDistance] = useState(pw?.mi && !pw.intervals ? String(pw.mi) : '')
   const [rpe, setRpe] = useState(5)
   const [pain, setPain] = useState(false)
   const [notes, setNotes] = useState('')
@@ -23,7 +25,7 @@ export function RunSheet({ initialType = 'easy', onClose, notify }) {
     const mins = Number(minutes) || target
     add('runs', {
       date, type, minutes: mins, distance: Number(distance) || 0, rpe, pain, notes,
-      plan: type === 'intervals' ? { rounds: rec.rounds, runSec: rec.runSec, walkSec: rec.walkSec } : { minutes: rec.minutes },
+      plan: pw ? { planId: planRef.planId, workoutId: pw.id, name: pw.name } : type === 'intervals' ? { rounds: rec.rounds, runSec: rec.runSec, walkSec: rec.walkSec } : { minutes: rec.minutes },
     })
     notify('Run saved')
     onClose()
@@ -32,6 +34,13 @@ export function RunSheet({ initialType = 'easy', onClose, notify }) {
   return (
     <Sheet title="Log a run" onClose={onClose}>
       <div className="stack">
+        {pw ? (
+          <div className="card flat">
+            <p className="muted small">{RUN_PLANS[planRef.planId].name} · Week {pw.week}</p>
+            <div style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 700, margin: '4px 0 2px' }}>{pw.name}</div>
+            <p className="muted small">{workoutSummary(pw)}</p>
+          </div>
+        ) : <>
         <Seg options={Object.entries(RUN_TYPES).map(([k, v]) => [k, v.short])} value={type} onChange={setType} />
 
         <div className="card flat">
@@ -45,6 +54,7 @@ export function RunSheet({ initialType = 'easy', onClose, notify }) {
           <p className="small">{rec.note}</p>
           <p className="muted small" style={{ marginTop: 6 }}>{RUN_TYPES[type].desc}</p>
         </div>
+        </>}
 
         <div className="grid-2">
           <label className="field">Minutes

@@ -29,7 +29,7 @@ export function EntryBody({ x }) {
       <div className="session tone-run" style={{ padding: 0, border: 0, background: 'none', cursor: 'default' }}>
         <div className="icon"><Icon.Run /></div>
         <div className="grow">
-          <h3>{RUN_TYPES[x.type]?.name}</h3>
+          <h3>{x.plan?.name || RUN_TYPES[x.type]?.name}</h3>
           <p className="muted small">{x.minutes} min{x.distance ? ` · ${x.distance} mi · ${formatPace(x.minutes, x.distance)}` : ''} · effort {x.rpe}{x.pain ? ' · pain flagged' : ''}</p>
           {x.notes && <p className="small" style={{ marginTop: 4 }}>{x.notes}</p>}
         </div>

@@ -177,7 +177,7 @@ export function runRecommendation(type, runs) {
 
   if (last.pain) {
     if (type === 'intervals') {
-      const p = last.plan || RUN_START.intervals
+      const p = last.plan?.rounds ? last.plan : RUN_START.intervals
       return { ...p, rounds: Math.max(4, p.rounds - 2), kind: 'down', note: 'You flagged pain. Fewer rounds this time. If it persists, rest it.' }
     }
     return { minutes: Math.max(15, Math.round(last.minutes * 0.8)), kind: 'down', note: 'You flagged pain. Cut back 20%. If it persists, rest it.' }
@@ -186,7 +186,7 @@ export function runRecommendation(type, runs) {
   const hard = last.rpe >= 8
 
   if (type === 'intervals') {
-    const p = last.plan || RUN_START.intervals
+    const p = last.plan?.rounds ? last.plan : RUN_START.intervals
     if (hard) return { ...p, kind: 'hold', note: 'Last one was a grind. Repeat it until it feels like a 6 or 7.' }
     if (p.rounds < 8) return { ...p, rounds: p.rounds + 1, kind: 'up', note: 'Add one round.' }
     if (p.runSec >= 300) return { ...p, kind: 'hold', note: '5 minute run intervals. You are ready for continuous easy runs.' }

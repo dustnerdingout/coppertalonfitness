@@ -4,6 +4,7 @@ import { SLOTS, DAY_NAMES, ROTATIONS, DEFAULT_SCHEDULE } from '../lib/program.js
 import { computeTargets } from '../lib/nutrition.js'
 import { weightSummary, todayStr } from '../lib/stats.js'
 import { Seg } from './ui.jsx'
+import { RUN_PLANS, planProgress } from '../lib/runplans.js'
 
 const ORDER = [1, 2, 3, 4, 5, 6, 0]
 
@@ -91,6 +92,30 @@ export default function Settings({ notify }) {
           ))}
         </div>
         {!custom && <p className="muted tiny">Auto: about 20% under your estimated maintenance ({auto.maintenance.toLocaleString()} cal), 1 g protein per lb of goal weight, 25% fat, rest carbs. Updates as your weight drops.</p>}
+      </div>
+
+      <div className="card stack">
+        <h2>Running plan</h2>
+        <p className="muted small">Adaptive runs grow about 10% when they feel easy. A structured plan gives each run day its exact workout, in order.</p>
+        <button className={`session tone-run ${!state.runPlan ? 'selected' : ''}`} onClick={() => update(() => ({ runPlan: null }))}>
+          <div className="grow"><h3>Adaptive runs</h3><p className="muted small">Easy, interval, and long runs that progress with your effort ratings</p></div>
+          {!state.runPlan && <span className="check" style={{ background: 'var(--copper)' }}>✓</span>}
+        </button>
+        {Object.entries(RUN_PLANS).map(([k, p]) => {
+          const on = state.runPlan?.id === k
+          const pp = on ? planProgress(state) : null
+          return (
+            <button key={k} className={`session tone-run ${on ? 'selected' : ''}`}
+              onClick={() => !on && update(() => ({ runPlan: { id: k, startedAt: Date.now() } }))}>
+              <div className="grow">
+                <h3>{p.source} {p.name}</h3>
+                <p className="muted small">{on ? `${pp.done} of ${pp.total} done${pp.next ? ` · next: Week ${pp.next.week} ${pp.next.name}` : ' · plan complete'}` : `${p.weeks} weeks · ${p.perWeek} runs a week`}</p>
+              </div>
+              {on && <span className="check" style={{ background: 'var(--copper)' }}>✓</span>}
+            </button>
+          )
+        })}
+        {state.runPlan && <button className="btn sm ghost" style={{ alignSelf: 'flex-start' }} onClick={() => confirm('Restart the plan from Week 1? Your logged runs stay in history.') && update(() => ({ runPlan: { ...state.runPlan, startedAt: Date.now() } }))}>Restart plan from Week 1</button>}
       </div>
 
       <div className="card stack">

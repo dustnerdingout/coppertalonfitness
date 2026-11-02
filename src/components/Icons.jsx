@@ -30,6 +30,11 @@ export const Icon = {
   Flame: () => <S><path d="M12 22c4 0 7-3 7-7 0-5-5-7-5-12-3 2-5 5-5 8-1-1-2-2-2-4-1.5 2-2 4-2 6 0 5 3 9 7 9z" /></S>,
   Calendar: () => <S><rect x="3" y="4.5" width="18" height="16.5" rx="3" /><path d="M3 9.5h18M8 2.5v4M16 2.5v4" /></S>,
   Move: () => <S><path d="M5 12h14M13 6l6 6-6 6" /></S>,
+  Clock: () => <S><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></S>,
+  Route: () => <S><path d="M6 21L10 3M18 21L14 3M12 7v2M12 12v2M12 17v2" /></S>,
+  Play: () => <S><path d="M7 5l12 7-12 7z" fill="currentColor" /></S>,
+  Pause: () => <S><path d="M8 5v14M16 5v14" strokeWidth="3" /></S>,
+  Metronome: () => <S><path d="M9 3h6l4 18H5zM12 17l5-9M8 14h8" /></S>,
   ChevronLeft: () => <S><path d="M15 6l-6 6 6 6" /></S>,
   X: () => <S><path d="M6 6l12 12M18 6L6 18" /></S>,
   Logo: () => (

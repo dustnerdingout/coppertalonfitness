@@ -8,7 +8,8 @@ const EMPTY = {
   profile: null, // { name, startWeight, goalWeight, heightIn, age, sex, startDate, targets }
   schedule: DEFAULT_SCHEDULE,
   rotation: 'ppl', // key of ROTATIONS
-  overrides: {},   // one-off changes per date: { 'YYYY-MM-DD': [slots] }
+  overrides: {},
+  runPlan: null,   // active structured run plan: { id, startedAt }   // one-off changes per date: { 'YYYY-MM-DD': [slots] }
   weights: [],   // { id, date, weight }
   lifts: [],     // { id, date, ts, focus, durationMin, exercises: [{ id, sets: [{ weight, reps }] }] }
   runs: [],      // { id, date, ts, type, minutes, distance, rpe, pain, notes, plan }
