@@ -20,7 +20,7 @@ function weekDates() {
   return Array.from({ length: 7 }, (_, i) => new Date(monday.getTime() + i * DAY))
 }
 
-export default function Today({ open, toggleTheme, dark, goTab, notify }) {
+export default function Today({ open, toggleTheme, dark, goTab, goDay, notify }) {
   const { state } = useStore()
   const [moving, setMoving] = useState(null)
   const [editing, setEditing] = useState(false)
@@ -145,7 +145,7 @@ export default function Today({ open, toggleTheme, dark, goTab, notify }) {
           const ds = todayStr(d)
           const slots = slotsFor(state, ds)
           return (
-            <div key={ds} className={`day ${ds === today ? 'today' : ''}`}>
+            <button key={ds} className={`day ${ds === today ? 'today' : ''}`} onClick={() => goDay(ds)} aria-label={`Open ${DAY_NAMES[d.getDay()]} ${d.getDate()}`}>
               <span>{DAY_NAMES[d.getDay()]}</span>
               <b>{d.getDate()}</b>
               <div className="dots">
@@ -155,7 +155,7 @@ export default function Today({ open, toggleTheme, dark, goTab, notify }) {
                   return <i key={s} className={`dot ${done ? tone : 'hollow'}`} />
                 })}
               </div>
-            </div>
+            </button>
           )
         })}
       </div>

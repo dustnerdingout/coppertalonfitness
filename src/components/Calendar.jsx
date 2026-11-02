@@ -12,9 +12,9 @@ import History, { EntryCard, allEntries } from './History.jsx'
 const toneIcon = { lift: Icon.Dumbbell, run: Icon.Run, mobility: Icon.Stretch, rest: Icon.Bed }
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export default function Calendar({ open, notify }) {
-  const [view, setView] = useState('week')
-  const [sel, setSel] = useState(todayStr())
+export default function Calendar({ open, notify, initialDate = null }) {
+  const [view, setView] = useState(initialDate ? 'day' : 'week')
+  const [sel, setSel] = useState(initialDate || todayStr())
   const goDay = (d) => { setSel(d); setView('day') }
 
   return (

@@ -41,6 +41,7 @@ function useResolvedTheme(theme) {
 export default function App() {
   const { state, update } = useStore()
   const [tab, setTab] = useState('today')
+  const [calDay, setCalDay] = useState(null) // open the Calendar on a specific day
   const [modal, setModal] = useState(null) // { type: 'lift' | 'run' | 'mobility' | 'weigh', runType? }
   const [toast, setToast] = useState('')
   const timer = useRef(null)
@@ -99,15 +100,15 @@ export default function App() {
 
   return (
     <div className="app">
-      {tab === 'today' && <Today open={setModal} toggleTheme={toggleTheme} dark={dark} goTab={setTab} notify={notify} />}
+      {tab === 'today' && <Today open={setModal} toggleTheme={toggleTheme} dark={dark} goTab={setTab} goDay={(d) => { setCalDay(d); setTab('calendar') }} notify={notify} />}
       {tab === 'progress' && <Progress />}
       {tab === 'food' && <Food notify={notify} />}
-      {tab === 'calendar' && <Calendar open={setModal} notify={notify} />}
+      {tab === 'calendar' && <Calendar key={calDay || 'cal'} initialDate={calDay} open={setModal} notify={notify} />}
       {tab === 'settings' && <Settings notify={notify} />}
 
       <nav className="nav" aria-label="Main">
         {TABS.map(([k, label, I]) => (
-          <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)} aria-current={tab === k ? 'page' : undefined}>
+          <button key={k} className={tab === k ? 'on' : ''} onClick={() => { setCalDay(null); setTab(k) }} aria-current={tab === k ? 'page' : undefined}>
             <I />{label}
           </button>
         ))}

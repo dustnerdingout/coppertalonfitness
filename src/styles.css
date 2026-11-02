@@ -179,7 +179,10 @@ p { margin: 0; }
 .day {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 500; color: var(--muted);
+  border: 0; background: none; padding: 4px 0 6px; border-radius: 12px; cursor: pointer; transition: background 0.15s ease;
 }
+@media (hover: hover) { .day:hover { background: var(--surface-2); } }
+.day:active { background: var(--surface-2); }
 .day b {
   font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--ink);
   width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
