@@ -443,6 +443,11 @@ select.input { padding-right: 32px; }
 .upcoming .chip.on { background: transparent; padding: 0; height: auto; font-size: 15px; font-weight: 500; color: var(--ink); margin-right: 12px; }
 .upcoming .chip.on::before { width: 7px; height: 7px; }
 
+button.up-link { cursor: pointer; border-radius: 8px; padding: 4px 6px !important; margin: -4px 6px -4px -6px !important; transition: background 0.15s ease; }
+button.up-link svg { width: 14px; height: 14px; color: var(--muted); margin-left: -2px; }
+@media (hover: hover) { button.up-link:hover { background: var(--surface-2) !important; } }
+button.up-link:active { background: var(--surface-2) !important; }
+
 /* ---------- Moving sessions ---------- */
 .slot-wrap { position: relative; }
 .slot-wrap .session { padding-bottom: 50px; }

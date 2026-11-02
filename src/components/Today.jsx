@@ -43,6 +43,14 @@ export default function Today({ open, toggleTheme, dark, goTab, notify }) {
   const inWeek = (arr) => arr.filter((x) => week.includes(x.date)).length
 
   const nextKey = draft ? draft.focus : nextFocus(lifts, state.rotation)
+
+  // Open an upcoming session. Doing it now, so it logs today.
+  const goPlanned = (x) => {
+    if (x.tone === 'lift') open({ type: 'lift', focus: x.focus, date: today })
+    else if (x.tone === 'run' && x.workout) open({ type: 'runworkout', planId: state.runPlan.id, workoutId: x.workout.id, date: today })
+    else if (x.tone === 'run') open({ type: 'run', runType: x.slot.slice(4), date: today })
+    else if (x.tone === 'mobility') open({ type: 'mobility', date: today })
+  }
   const hour = new Date().getHours()
   const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
@@ -189,7 +197,9 @@ export default function Today({ open, toggleTheme, dark, goTab, notify }) {
                 <div className="wk-date"><span>{DAY_NAMES[parseDate(d).getDay()]}</span><b>{parseDate(d).getDate()}</b></div>
                 <div className="chips grow">
                   {plan[d].length ? plan[d].map((x) => (
-                    <span key={x.slot} className={`chip ${x.tone} on`} style={{ height: 26, display: 'inline-flex', alignItems: 'center', cursor: 'default' }}>{x.label}</span>
+                    x.tone === 'rest'
+                      ? <span key={x.slot} className={`chip ${x.tone} on`} style={{ height: 26, display: 'inline-flex', alignItems: 'center', cursor: 'default' }}>{x.label}</span>
+                      : <button key={x.slot} className={`chip ${x.tone} on up-link`} onClick={() => goPlanned(x)}>{x.label}<Icon.Chevron /></button>
                   )) : <span className="muted small">Open day</span>}
                 </div>
               </div>
