@@ -2,9 +2,12 @@ import { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { todayStr } from '../lib/stats.js'
 import { Icon } from './Icons.jsx'
+import { GoogleButton } from './Account.jsx'
+import { useSync } from '../lib/sync.jsx'
 
 export default function Onboarding() {
   const { update } = useStore()
+  const sync = useSync()
   const [name, setName] = useState('')
   const [weight, setWeight] = useState('')
   const [goal, setGoal] = useState('')
@@ -37,7 +40,14 @@ export default function Onboarding() {
         {w > 0 && g > 0 && <p className="muted small">That's <b>{Math.round(w - g)} lb</b> to lose. At a healthy 1 to 2 lb a week, expect roughly {Math.round((w - g) / 2)} to {Math.round(w - g)} weeks.</p>}
         <button className="btn primary block" onClick={start} disabled={!w || !g}>Let's go</button>
       </div>
-      <p className="muted tiny center">Your data stays on this device. Back it up anytime from Settings.</p>
+      {sync.configured && !sync.user && (
+        <div className="stack" style={{ gap: 10 }}>
+          <p className="muted small center">Already using Copper Talon on another device?</p>
+          <GoogleButton label="Sign in with Google to restore" />
+        </div>
+      )}
+      {sync.user && <p className="muted small center">{sync.status === 'syncing' ? 'Looking for your data…' : `Signed in as ${sync.user.email}. No saved data yet, so set up your profile above.`}</p>}
+      <p className="muted tiny center">{sync.user ? 'Everything you log syncs to your account.' : 'Your data stays on this device unless you sign in. Back it up anytime from Settings.'}</p>
     </div>
   )
 }

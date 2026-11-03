@@ -4,6 +4,8 @@ import { SLOTS, DAY_NAMES, ROTATIONS, DEFAULT_SCHEDULE } from '../lib/program.js
 import { computeTargets } from '../lib/nutrition.js'
 import { weightSummary, todayStr } from '../lib/stats.js'
 import { Seg } from './ui.jsx'
+import { AccountCard } from './Account.jsx'
+import { useSync } from '../lib/sync.jsx'
 import { WorkoutSettingsBody } from './TrainingSheets.jsx'
 import { workoutSettings, isDeloadWeek } from '../lib/training.js'
 import { mondayOf } from '../lib/plan.js'
@@ -13,6 +15,7 @@ const ORDER = [1, 2, 3, 4, 5, 6, 0]
 
 export default function Settings({ notify }) {
   const { state, update, replaceAll, reset } = useStore()
+  const sync = useSync()
   const { profile, schedule, theme, rotation } = state
   const fileRef = useRef(null)
   const ws = weightSummary(profile, state.weights)
@@ -62,6 +65,8 @@ export default function Settings({ notify }) {
       <header className="top" style={{ marginBottom: 0 }}>
         <div><div className="eyebrow">Setup</div><h1>Settings</h1></div>
       </header>
+
+      <AccountCard />
 
       <div className="card stack">
         <h2>Appearance</h2>
@@ -166,7 +171,7 @@ export default function Settings({ notify }) {
           <button className="btn grow" onClick={() => fileRef.current?.click()}>Import backup</button>
           <input ref={fileRef} type="file" accept="application/json" hidden onChange={importData} />
         </div>
-        <button className="btn ghost danger" onClick={() => confirm('Erase ALL data? This cannot be undone.') && reset()}>Erase all data</button>
+        <button className="btn ghost danger" onClick={() => confirm(sync.user ? 'Erase ALL data on this device AND in your account (every signed in device)? This cannot be undone.' : 'Erase ALL data? This cannot be undone.') && reset()}>Erase all data</button>
       </div>
 
       <div className="card stack small">

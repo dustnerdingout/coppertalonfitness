@@ -787,3 +787,14 @@ button.up-link:active { background: var(--surface-2) !important; }
 .ds-icon svg { width: 17px; height: 17px; }
 .ds-label { font-weight: 600; font-size: 15px; }
 .ds-sub { margin: -6px 0 6px 46px; }
+
+/* ---------- Account ---------- */
+.google-btn { background: #fff !important; color: #1f1f1f !important; box-shadow: inset 0 0 0 1px #dadce0; font-weight: 500; gap: 10px; }
+:root[data-theme='dark'] .google-btn { background: #131314 !important; color: #e3e3e3 !important; box-shadow: inset 0 0 0 1px #8e918f; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: var(--copper-soft); color: var(--copper); display: grid; place-items: center; font-weight: 700; font-size: 18px; flex: none; }
+.sync-line { display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
+.sync-line.syncing .sync-dot, .sync-line.idle .sync-dot { background: var(--warn); }
+.sync-line.offline .sync-dot { background: var(--muted); }
+.sync-line.error .sync-dot { background: var(--bad); }
+.sync-line.error { color: var(--bad); }

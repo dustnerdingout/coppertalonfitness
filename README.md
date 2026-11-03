@@ -57,6 +57,17 @@ Netlify works the same way: build command `npm run build`, publish folder `dist`
 ### Put it on your phone
 Open the deployed URL in Safari, tap **Share**, then **Add to Home Screen**. It opens full screen like an app.
 
+## Google sign in and cloud sync (Supabase)
+
+Optional. Without it the app works fully offline on one device.
+
+1. **Table:** in Supabase, open **SQL Editor > New query**, paste `supabase/schema.sql`, and click **Run**. It creates the `app_data` table with row level security so each person only sees their own data. Safe to run more than once.
+2. **Google provider:** **Authentication > Sign In / Providers > Google** turned on, with your Google Cloud OAuth client ID and secret.
+3. **Redirect URLs:** **Authentication > URL Configuration**. Set **Site URL** to your Vercel address, and add it under **Redirect URLs** (plus `http://localhost:5173` for local testing).
+4. **Keys:** in Vercel, **Settings > Environment Variables**: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (or `VITE_SUPABASE_PUBLISHABLE_KEY`). Redeploy after adding them. For local dev, copy `.env.example` to `.env`.
+
+How sync works: one row per user holds the whole app (minus the in-progress workout). Each device pulls, merges record by record (newest edit wins, deletions stick), and uploads. It syncs on sign in, 2 seconds after any change, when the app comes back into view, and every 30 seconds while open.
+
 ## Your data
 Everything is saved in the browser's local storage on the device you use. Nothing is sent anywhere.
 Use **Settings > Export backup** regularly, and **Import backup** to move to a new device.
